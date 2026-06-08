@@ -1,0 +1,405 @@
+# SPDX-FileCopyrightText: 2026 QuickBar contributors
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: quickbar 0.2.1\n"
+"Report-Msgid-Bugs-To: https://github.com/kevinbudz/quickbar/issues\n"
+"POT-Creation-Date: 2026-06-08 21:25+0100\n"
+"PO-Revision-Date: 2026-06-08 21:47+0100\n"
+"Last-Translator: EvilSquirrelGuy <evil.squirrelo.xtreme@gmail.com>\n"
+"Language-Team: British English <N/A>\n"
+"Language: en_GB\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/appmenumodel.cpp:115
+msgid "Search"
+msgstr "Search"
+
+#: src/appmenumodel.cpp:122
+msgid "Search…"
+msgstr "Search…"
+
+#: src/appmenumodel.cpp:360
+msgid "Plasma"
+msgstr "Plasma"
+
+#: src/genericmenu.cpp:48
+msgid "&File"
+msgstr "&File"
+
+#: src/genericmenu.cpp:49
+msgid "Set priority…"
+msgstr "Set priority…"
+
+#: src/genericmenu.cpp:52
+msgid "Send Signal"
+msgstr "Send Signal"
+
+#: src/genericmenu.cpp:53
+msgid "Suspend (STOP)"
+msgstr "Suspend (STOP)"
+
+#: src/genericmenu.cpp:54
+msgid "Continue (CONT)"
+msgstr "Continue (CONT)"
+
+#: src/genericmenu.cpp:55
+msgid "Hangup (HUP)"
+msgstr "Hangup (HUP)"
+
+#: src/genericmenu.cpp:56
+msgid "Interrupt (INT)"
+msgstr "Interrupt (INT"
+
+#: src/genericmenu.cpp:57
+msgid "Terminate (TERM)"
+msgstr "Terminate (TERM)"
+
+#: src/genericmenu.cpp:58
+msgid "Kill (KILL)"
+msgstr "Kill (KILL)"
+
+#: src/genericmenu.cpp:59
+msgid "User 1 (USR1)"
+msgstr "User 1 (USR1)"
+
+#: src/genericmenu.cpp:60
+msgid "User 2 (USR2)"
+msgstr "User 2 (USR2)"
+
+#: src/genericmenu.cpp:63
+msgid "Quit Application"
+msgstr "Quit Application"
+
+#: src/genericmenu.cpp:66
+msgid "&Edit"
+msgstr "&Edit"
+
+#: src/genericmenu.cpp:67
+msgid "&Undo"
+msgstr "&Undo"
+
+#: src/genericmenu.cpp:68
+msgid "&Redo"
+msgstr "&Redo"
+
+#: src/genericmenu.cpp:70
+msgid "Cu&t"
+msgstr "Cu&t"
+
+#: src/genericmenu.cpp:71
+msgid "&Copy"
+msgstr "&Copy"
+
+#: src/genericmenu.cpp:72
+msgid "&Paste"
+msgstr "&Paste"
+
+#: src/genericmenu.cpp:74
+msgid "Select &All"
+msgstr "Select &All"
+
+#: src/genericmenu.cpp:76
+msgid "&View"
+msgstr "&View"
+
+#: src/genericmenu.cpp:77
+msgid "Minimize"
+msgstr "Minimise"
+
+#: src/genericmenu.cpp:79
+msgid "Maximize"
+msgstr "Maximise"
+
+#: src/genericmenu.cpp:82
+msgid "&Help"
+msgstr "&Help"
+
+#: src/genericmenu.cpp:83
+msgid "&About"
+msgstr "&About"
+
+#: qml/configAbout.qml:18 qml/config.qml:12 qml/main.qml:365
+msgctxt "@title:window About this widget"
+msgid "About"
+msgstr "About"
+
+#: qml/configAbout.qml:46
+msgctxt "@action:button Send an email"
+msgid "Send an email to %1"
+msgstr "Send an email to %1"
+
+#: qml/configAbout.qml:57
+msgctxt "@action:button Open website"
+msgid "Open website %1"
+msgstr "Open website %1"
+
+#: qml/configAbout.qml:136
+msgctxt "@title:group"
+msgid "Website"
+msgstr "Website"
+
+#: qml/configAbout.qml:147
+msgctxt "@title:group"
+msgid "Get Help"
+msgstr "Get Help"
+
+#: qml/configAbout.qml:154
+msgctxt "@action:button Report an issue"
+msgid "Report an issue"
+msgstr "Report an issue"
+
+#: qml/configAbout.qml:160
+msgctxt "@title:group"
+msgid "Copyright"
+msgstr "Copyright"
+
+#: qml/configAbout.qml:179
+msgctxt "@label License"
+msgid "License: %1"
+msgstr "Licence: %1"
+
+#: qml/configAbout.qml:185
+msgctxt "@action:button"
+msgid "Read License"
+msgstr "Read Licence"
+
+#: qml/configAbout.qml:199
+msgctxt "@title:group"
+msgid "Authors"
+msgstr "Authors"
+
+#: qml/configAbout.qml:211
+msgctxt "@title:group"
+msgid "Credits"
+msgstr "Credits"
+
+#: qml/configAbout.qml:224
+msgctxt "@title:group"
+msgid "Translators"
+msgstr "Translators"
+
+#: qml/configGeneral.qml:65
+msgid "Always show the menu bar"
+msgstr "Always show the menu bar"
+
+#: qml/configGeneral.qml:66
+msgid "Only when the app window is active"
+msgstr "Only when the app window is active"
+
+#: qml/configGeneral.qml:67
+msgid "Hide when no application menu is available"
+msgstr "Hide when no application menu is available"
+
+#: qml/configGeneral.qml:88
+msgid "default weight"
+msgstr "default weight"
+
+#: qml/configGeneral.qml:91
+msgid "thin"
+msgstr "thin"
+
+#: qml/configGeneral.qml:94
+msgid "extra light"
+msgstr "extra light"
+
+#: qml/configGeneral.qml:97
+msgid "light"
+msgstr "light"
+
+#: qml/configGeneral.qml:100
+msgid "regular"
+msgstr "regular"
+
+#: qml/configGeneral.qml:103
+msgid "medium"
+msgstr "medium"
+
+#: qml/configGeneral.qml:106
+msgid "semi bold"
+msgstr "semi bold"
+
+#: qml/configGeneral.qml:109
+msgid "bold"
+msgstr "bold"
+
+#: qml/configGeneral.qml:112
+msgid "extra bold"
+msgstr "extra bold"
+
+#: qml/configGeneral.qml:114
+msgid "black"
+msgstr "black"
+
+#: qml/configGeneral.qml:118
+msgid "System default"
+msgstr "System default"
+
+#: qml/configGeneral.qml:120
+msgctxt "@label font size in points"
+msgid "%1 pt"
+msgstr "%1 pt"
+
+#: qml/configGeneral.qml:121
+msgid "default size"
+msgstr "default size"
+
+#: qml/configGeneral.qml:123
+msgctxt "@info selected font, %1 family, %2 size, %3 style"
+msgid "%1, %2, %3"
+msgstr "%1, %2, %3"
+
+#: qml/configGeneral.qml:208
+msgid ""
+"Remove Plasma’s stock Global Menu from this panel before using QuickBar. "
+"Both widgets register the same menu service and cannot run together."
+msgstr ""
+"Remove Plasma’s stock Global Menu from this panel before using QuickBar. "
+"Both widgets register the same menu service and cannot run together."
+
+#: qml/configGeneral.qml:211
+msgctxt "@action:button"
+msgid "Learn more"
+msgstr "Learn more"
+
+#: qml/configGeneral.qml:231
+msgid "Menu bar"
+msgstr "Menu bar"
+
+#: qml/configGeneral.qml:238
+msgid "Display:"
+msgstr "Display:"
+
+#: qml/configGeneral.qml:243
+msgid "Full menubar (File, Edit, …)"
+msgstr "Full menubar (File, Edit, …)"
+
+#: qml/configGeneral.qml:249
+msgid "Single application-menu button"
+msgstr "Single application-menu button"
+
+#: qml/configGeneral.qml:262
+msgid "Fill remaining panel width"
+msgstr "Fill remaining panel width"
+
+#: qml/configGeneral.qml:268
+msgid "Show menus for apps on all screens"
+msgstr "Show menus for apps on all screens"
+
+#: qml/configGeneral.qml:274
+msgid "Open menus on hover while a menu is already open"
+msgstr "Open menus on hover while a menu is already open"
+
+#: qml/configGeneral.qml:280
+msgid "Generic menu for apps without global menu support"
+msgstr "Generic menu for apps without global menu support"
+
+#: qml/configGeneral.qml:297
+msgid "Visibility"
+msgstr "Visibility"
+
+#: qml/configGeneral.qml:305
+msgid "When to show:"
+msgstr "When to show:"
+
+#: qml/configGeneral.qml:315
+msgid "Show application name before the menu"
+msgstr "Show application name before the menu"
+
+#: qml/configGeneral.qml:321
+msgid "Show menu bar on Desktop"
+msgstr "Show menu bar on Desktop"
+
+#: qml/configGeneral.qml:360
+msgid "Button style"
+msgstr "Button style"
+
+#: qml/configGeneral.qml:368
+msgid "Spacing (px):"
+msgstr "Spacing (px):"
+
+#: qml/configGeneral.qml:375
+msgid "Hover corner radius (px):"
+msgstr "Hover corner radius (px):"
+
+#: qml/configGeneral.qml:382
+msgid "Max visible items:"
+msgstr "Max visible items:"
+
+#: qml/configGeneral.qml:392
+msgid "Scroll when there are more top-level menus. Set to 0 for no limit."
+msgstr "Scroll when there are more top-level menus. Set to 0 for no limit."
+
+#: qml/configGeneral.qml:409
+msgid "Text"
+msgstr "Text"
+
+#: qml/configGeneral.qml:416
+msgid "Name margins (px):"
+msgstr "Name margins (px):"
+
+#: qml/configGeneral.qml:428
+msgid "Before:"
+msgstr "Before:"
+
+#: qml/configGeneral.qml:445
+msgid "After:"
+msgstr "After:"
+
+#: qml/configGeneral.qml:458
+msgid "Colors:"
+msgstr "Colours:"
+
+#: qml/configGeneral.qml:469
+msgid "Text:"
+msgstr "Text:"
+
+#: qml/configGeneral.qml:475 qml/configGeneral.qml:491
+msgid "#RRGGBB or empty"
+msgstr "#RRGGBB or empty"
+
+#: qml/configGeneral.qml:485
+msgid "Hover:"
+msgstr "Hover:"
+
+#: qml/configGeneral.qml:502
+msgid "Application name font:"
+msgstr "Application name font:"
+
+#: qml/configGeneral.qml:513 qml/configGeneral.qml:536
+msgctxt "@action:button"
+msgid "Choose Font…"
+msgstr "Choose Font…"
+
+#: qml/configGeneral.qml:520 qml/configGeneral.qml:543
+msgctxt "@action:button"
+msgid "Use system default font"
+msgstr "Use system default font"
+
+#: qml/configGeneral.qml:526
+msgid "Menu font:"
+msgstr "Menu font:"
+
+#: qml/configGeneral.qml:555
+msgctxt "@title:window"
+msgid "Choose Font"
+msgstr "Choose Font"
+
+#: qml/configGeneral.qml:565
+msgctxt "@title:window"
+msgid "Choose Application Name Font"
+msgstr "Choose Application Name Font"
+
+#: qml/config.qml:7
+msgid "General"
+msgstr "General"
+
+#: qml/MenuDelegate.qml:55
+msgctxt "@info:usagetip"
+msgid "Open a menu"
+msgstr "Open a menu"
