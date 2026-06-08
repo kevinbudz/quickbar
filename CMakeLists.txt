@@ -87,4 +87,7 @@ if(TARGET X11::Xtst)
     target_link_libraries(org.quickbar.globalmenu PRIVATE X11::X11 X11::Xtst)
 endif()
 
+# compile i18n strings into project
+ki18n_install(po)
+
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
