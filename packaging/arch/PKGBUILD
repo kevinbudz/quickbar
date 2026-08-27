@@ -22,13 +22,14 @@ makedepends=(
     'extra-cmake-modules'
     'gcc'
     'kitemmodels'
+    'libx11'
     'libxtst'
 )
 optdepends=(
     'dolphin: Finder-style desktop menu (Dolphin menu bar on desktop)'
 )
 source=("$url/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('64755ac6b116ecda0a83350f9cffde479f68e9c24a189407143e11cf1180608c')
 
 build() {
     cmake -B build -S "quickbar-$pkgver" \

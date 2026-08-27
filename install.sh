@@ -138,6 +138,8 @@ install_deps_arch() {
         kitemmodels
         kwindowsystem
         kirigami
+        libx11
+        libxtst
     )
     local missing=()
     local pkg
@@ -169,6 +171,8 @@ install_deps_debian() {
         libkf6itemmodels-dev
         libkf6windowsystem-dev
         libkirigami-dev
+        libx11-dev
+        libxtst-dev
     )
     local missing=()
     local pkg
@@ -210,6 +214,8 @@ install_deps_fedora() {
         kf6-kitemmodels-devel
         kf6-kwindowsystem-devel
         kf6-kirigami-devel
+        libX11-devel
+        libXtst-devel
     )
     local missing=()
     local pkg
@@ -248,6 +254,8 @@ install_deps_opensuse() {
         kf6-kitemmodels-devel
         kf6-kwindowsystem-devel
         kf6-kirigami-devel
+        libX11-devel
+        libXtst-devel
     )
     local missing=()
     local pkg
@@ -273,19 +281,20 @@ Install Plasma 6 build dependencies manually, then re-run:
   Arch / CachyOS:
     sudo pacman -S --needed base-devel cmake extra-cmake-modules gcc \
       libplasma plasma-workspace qt6-base qt6-declarative \
-      kconfig kcoreaddons ki18n kitemmodels kwindowsystem kirigami
+      kconfig kcoreaddons ki18n kitemmodels kwindowsystem kirigami libx11 libxtst
 
   Debian / Ubuntu (Plasma 6):
     sudo apt install cmake extra-cmake-modules g++ \
       qt6-base-dev qt6-declarative-dev libplasma-dev plasma-workspace-dev \
       libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev libkf6itemmodels-dev \
-      libkf6windowsystem-dev libkirigami-dev
+      libkf6windowsystem-dev libkirigami-dev libx11-dev libxtst-dev
 
   Fedora:
     sudo dnf install cmake extra-cmake-modules gcc-c++ \
       qt6-qtbase-devel qt6-qtdeclarative-devel libplasma-devel \
       plasma-workspace-devel kf6-kconfig-devel kf6-kcoreaddons-devel \
-      kf6-ki18n-devel kf6-kitemmodels-devel kf6-kwindowsystem-devel kf6-kirigami-devel
+      kf6-ki18n-devel kf6-kitemmodels-devel kf6-kwindowsystem-devel kf6-kirigami-devel \
+      libX11-devel libXtst-devel
 
   openSUSE:
     sudo zypper build-deps-install packaging/rpm/quickbar.spec
@@ -357,7 +366,7 @@ if ! command -v cmake >/dev/null 2>&1; then
     exit 1
 fi
 
-cmake -B "$build_dir" -DCMAKE_INSTALL_PREFIX="$prefix"
+cmake -B "$build_dir" -DCMAKE_INSTALL_PREFIX="$prefix" -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
 cmake --build "$build_dir"
 
 if [[ "$prefix" == /usr ]]; then

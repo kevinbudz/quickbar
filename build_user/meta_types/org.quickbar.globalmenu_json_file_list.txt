@@ -1,0 +1,4 @@
+/home/kevin/Documents/GitHub/quickbar/build_user/org.quickbar.globalmenu_autogen/include/moc_appmenumodel.cpp.json
+/home/kevin/Documents/GitHub/quickbar/build_user/org.quickbar.globalmenu_autogen/include/moc_menushortcutsender.cpp.json
+/home/kevin/Documents/GitHub/quickbar/build_user/org.quickbar.globalmenu_autogen/include/moc_quickbarapplet.cpp.json
+/home/kevin/Documents/GitHub/quickbar/build_user/org.quickbar.globalmenu_autogen/include/quickbarapplet.moc.json

@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="/qt/qml/plasma/applet/org/quickbar/globalmenu/">
+    <file alias="main.qml">/home/kevin/Documents/GitHub/quickbar/qml/main.qml</file>
+    <file alias="MenuDelegate.qml">/home/kevin/Documents/GitHub/quickbar/qml/MenuDelegate.qml</file>
+    <file alias="AppNameLabel.qml">/home/kevin/Documents/GitHub/quickbar/qml/AppNameLabel.qml</file>
+    <file alias="config.qml">/home/kevin/Documents/GitHub/quickbar/qml/config.qml</file>
+    <file alias="configGeneral.qml">/home/kevin/Documents/GitHub/quickbar/qml/configGeneral.qml</file>
+    <file alias="configAbout.qml">/home/kevin/Documents/GitHub/quickbar/qml/configAbout.qml</file>
+  </qresource>
+</RCC>
+

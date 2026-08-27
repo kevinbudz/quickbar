@@ -5,31 +5,31 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: quickbar 0.2.1\n"
-"Report-Msgid-Bugs-To: https://github.com/kevinbudz/quickbar/issues\n"
-"POT-Creation-Date: 2026-06-08 21:25+0100\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 13:57-0500\n"
 "PO-Revision-Date: 2026-06-08 23:34+0100\n"
 "Last-Translator: EvilSquirrelGuy <evil.squirrelo.xtreme@gmail.com>\n"
 "Language-Team: Polish <N/A>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"Content-Transfer-Encoding: 8bit\n"
 
-#: src/appmenumodel.cpp:115
+#: src/appmenumodel.cpp:115 src/appmenumodel.cpp:154 src/appmenumodel.cpp:143
 msgid "Search"
 msgstr "Wyszukaj"
 
-#: src/appmenumodel.cpp:122
+#: src/appmenumodel.cpp:122 src/appmenumodel.cpp:161 src/appmenumodel.cpp:150
 msgid "Search…"
 msgstr "Wyszukaj…"
 
-#: src/appmenumodel.cpp:360
+#: src/appmenumodel.cpp:360 src/appmenumodel.cpp:472 src/appmenumodel.cpp:461
 msgid "Plasma"
 msgstr "Plasma"
 
-#: src/genericmenu.cpp:48
+#: src/genericmenu.cpp:48 src/genericmenu.cpp:40
 msgid "&File"
 msgstr "&Plik"
 
@@ -73,60 +73,61 @@ msgstr "Użytkownik 1 (USR1)"
 msgid "User 2 (USR2)"
 msgstr "Użytkownik 2 (USR2)"
 
-#: src/genericmenu.cpp:63
+#: src/genericmenu.cpp:63 src/genericmenu.cpp:41
 msgid "Quit Application"
 msgstr "Zamknij aplikację"
 
-#: src/genericmenu.cpp:66
+#: src/genericmenu.cpp:66 src/genericmenu.cpp:45
 msgid "&Edit"
 msgstr "&Edytuj"
 
-#: src/genericmenu.cpp:67
 # TODO: check the placement of the &
+#: src/genericmenu.cpp:67 src/genericmenu.cpp:46
 msgid "&Undo"
 msgstr "Co&fnij"
 
-#: src/genericmenu.cpp:68
+#: src/genericmenu.cpp:68 src/genericmenu.cpp:47
 msgid "&Redo"
 msgstr "&Ponów"
 
-#: src/genericmenu.cpp:70
+#: src/genericmenu.cpp:70 src/genericmenu.cpp:49
 msgid "Cu&t"
 msgstr "Wy&tnij"
 
-#: src/genericmenu.cpp:71
+#: src/genericmenu.cpp:71 src/genericmenu.cpp:50
 msgid "&Copy"
 msgstr "&Kopiuj"
 
-#: src/genericmenu.cpp:72
+#: src/genericmenu.cpp:72 src/genericmenu.cpp:51
 msgid "&Paste"
 msgstr "&Wklej"
 
-#: src/genericmenu.cpp:74
+#: src/genericmenu.cpp:74 src/genericmenu.cpp:53
 msgid "Select &All"
 msgstr "Z&aznacz wszystko"
 
-#: src/genericmenu.cpp:76
+#: src/genericmenu.cpp:76 src/genericmenu.cpp:55
 msgid "&View"
 msgstr "&Widok"
 
-#: src/genericmenu.cpp:77
+#: src/genericmenu.cpp:77 src/genericmenu.cpp:56
 msgid "Minimize"
 msgstr "Minimalizuj"
 
-#: src/genericmenu.cpp:79
+#: src/genericmenu.cpp:79 src/genericmenu.cpp:58
 msgid "Maximize"
 msgstr "Maksymalizuj"
 
-#: src/genericmenu.cpp:82
+#: src/genericmenu.cpp:82 src/genericmenu.cpp:61
 msgid "&Help"
 msgstr "&Pomoc"
 
-#: src/genericmenu.cpp:83
+#: src/genericmenu.cpp:83 src/genericmenu.cpp:62
 msgid "&About"
 msgstr "&O programie"
 
-#: qml/configAbout.qml:18 qml/config.qml:12 qml/main.qml:365
+#: qml/configAbout.qml:18 qml/config.qml:12 qml/main.qml:365 qml/main.qml:403
+#: qml/main.qml:408
 msgctxt "@title:window About this widget"
 msgid "About"
 msgstr "O widgecie"
@@ -186,213 +187,219 @@ msgctxt "@title:group"
 msgid "Translators"
 msgstr "Tłumacze"
 
-#: qml/configGeneral.qml:65
+#: qml/configGeneral.qml:65 qml/configGeneral.qml:69
 msgid "Always show the menu bar"
 msgstr "Zawsze pokazuj pasek menu"
 
-#: qml/configGeneral.qml:66
+#: qml/configGeneral.qml:66 qml/configGeneral.qml:70
 msgid "Only when the app window is active"
 msgstr "Tylko kiedy okno jest aktywne"
 
-#: qml/configGeneral.qml:67
+#: qml/configGeneral.qml:67 qml/configGeneral.qml:71
 msgid "Hide when no application menu is available"
 msgstr "Ukryj gdy żadne menu aplikacji nie jest widocznę"
 
-#: qml/configGeneral.qml:88
+#: qml/configGeneral.qml:88 qml/configGeneral.qml:92
 msgid "default weight"
 msgstr "domyślny krój"
 
-#: qml/configGeneral.qml:91
+#: qml/configGeneral.qml:91 qml/configGeneral.qml:95
 msgid "thin"
 msgstr "cienki"
 
-#: qml/configGeneral.qml:94
+#: qml/configGeneral.qml:94 qml/configGeneral.qml:98
 msgid "extra light"
 msgstr "bardzo jasny"
 
-#: qml/configGeneral.qml:97
+#: qml/configGeneral.qml:97 qml/configGeneral.qml:101
 msgid "light"
 msgstr "jasny"
 
-#: qml/configGeneral.qml:100
+#: qml/configGeneral.qml:100 qml/configGeneral.qml:104
 msgid "regular"
 msgstr "zwykły"
 
-#: qml/configGeneral.qml:103
+#: qml/configGeneral.qml:103 qml/configGeneral.qml:107
 msgid "medium"
 msgstr "średni"
 
-#: qml/configGeneral.qml:106
+#: qml/configGeneral.qml:106 qml/configGeneral.qml:110
 msgid "semi bold"
 msgstr "półgruby"
 
-#: qml/configGeneral.qml:109
+#: qml/configGeneral.qml:109 qml/configGeneral.qml:113
 msgid "bold"
 msgstr "pogrubiony"
 
-#: qml/configGeneral.qml:112
+#: qml/configGeneral.qml:112 qml/configGeneral.qml:116
 msgid "extra bold"
 msgstr "bardzo pogrubiony"
 
-#: qml/configGeneral.qml:114
+#: qml/configGeneral.qml:114 qml/configGeneral.qml:118
 msgid "black"
 msgstr "czarny"
 
-#: qml/configGeneral.qml:118
+#: qml/configGeneral.qml:118 qml/configGeneral.qml:122
 msgid "System default"
 msgstr "Domyślna systemowa"
 
-#: qml/configGeneral.qml:120
+#: qml/configGeneral.qml:120 qml/configGeneral.qml:124
 msgctxt "@label font size in points"
 msgid "%1 pt"
 msgstr "%1 pt"
 
-#: qml/configGeneral.qml:121
+#: qml/configGeneral.qml:121 qml/configGeneral.qml:125
 msgid "default size"
 msgstr "domyślny rozmiar"
 
-#: qml/configGeneral.qml:123
+#: qml/configGeneral.qml:123 qml/configGeneral.qml:127
 msgctxt "@info selected font, %1 family, %2 size, %3 style"
 msgid "%1, %2, %3"
 msgstr "%1, %2, %3"
 
-#: qml/configGeneral.qml:208
+#: qml/configGeneral.qml:208 qml/configGeneral.qml:212
 msgid ""
 "Remove Plasma’s stock Global Menu from this panel before using QuickBar. "
 "Both widgets register the same menu service and cannot run together."
 msgstr ""
-"Usuń standardowy Global Menu Plasmy z tego panelu przed używaniem QuickBar'a. "
-"Oba widgety rejestrują ten sam serwis menu i nie mogą działać jednocześnie."
+"Usuń standardowy Global Menu Plasmy z tego panelu przed używaniem "
+"QuickBar'a. Oba widgety rejestrują ten sam serwis menu i nie mogą działać "
+"jednocześnie."
 
-#: qml/configGeneral.qml:211
+#: qml/configGeneral.qml:211 qml/configGeneral.qml:215
 msgctxt "@action:button"
 msgid "Learn more"
 msgstr "Dowiedz się więcej"
 
-#: qml/configGeneral.qml:231
+#: qml/configGeneral.qml:231 qml/configGeneral.qml:235
 msgid "Menu bar"
 msgstr "Pasek menu"
 
-#: qml/configGeneral.qml:238
+#: qml/configGeneral.qml:238 qml/configGeneral.qml:242
 msgid "Display:"
 msgstr "Wyświetlenie:"
 
-#: qml/configGeneral.qml:243
+#: qml/configGeneral.qml:243 qml/configGeneral.qml:247
 msgid "Full menubar (File, Edit, …)"
 msgstr "Pełny pasek menu (Plik, Edytuj, …)"
 
-#: qml/configGeneral.qml:249
+#: qml/configGeneral.qml:249 qml/configGeneral.qml:253
 msgid "Single application-menu button"
 msgstr "Jeden przycisk z menu aplikacji"
 
-#: qml/configGeneral.qml:262
+#: qml/configGeneral.qml:262 qml/configGeneral.qml:266
 msgid "Fill remaining panel width"
 msgstr "Wypełnij pozostałą szerokość panelu"
 
-#: qml/configGeneral.qml:268
+#: qml/configGeneral.qml:268 qml/configGeneral.qml:272
 msgid "Show menus for apps on all screens"
 msgstr "Pokazuj menu dla aplikacji na wszystkich ekranach"
 
-#: qml/configGeneral.qml:274
+#: qml/configGeneral.qml:274 qml/configGeneral.qml:278
 msgid "Open menus on hover while a menu is already open"
 msgstr "Otwieraj menu po najechaniu gdy menu już jest otwarte"
 
-#: qml/configGeneral.qml:280
+#: qml/configGeneral.qml:280 qml/configGeneral.qml:284
 msgid "Generic menu for apps without global menu support"
 msgstr "Generyczne menu dla aplikacji bez obsługi globalnego menu"
 
-#: qml/configGeneral.qml:297
+#: qml/configGeneral.qml:297 qml/configGeneral.qml:308
 msgid "Visibility"
 msgstr "Widoczność"
 
-#: qml/configGeneral.qml:305
+#: qml/configGeneral.qml:305 qml/configGeneral.qml:316
 msgid "When to show:"
 msgstr "Kiedy pokazywać:"
 
-#: qml/configGeneral.qml:315
+#: qml/configGeneral.qml:315 qml/configGeneral.qml:326
 msgid "Show application name before the menu"
 msgstr "Pokazuj nazwę aplikacji przed menu"
 
-#: qml/configGeneral.qml:321
+#: qml/configGeneral.qml:321 qml/configGeneral.qml:339
 msgid "Show menu bar on Desktop"
 msgstr "Pokazuj pasek menu na pulpicie"
 
-#: qml/configGeneral.qml:360
+#: qml/configGeneral.qml:360 qml/configGeneral.qml:378
 msgid "Button style"
 msgstr "Styl przycisków"
 
-#: qml/configGeneral.qml:368
+#: qml/configGeneral.qml:368 qml/configGeneral.qml:386
 msgid "Spacing (px):"
 msgstr "Odstęp (px):"
 
-#: qml/configGeneral.qml:375
+#: qml/configGeneral.qml:375 qml/configGeneral.qml:393
 msgid "Hover corner radius (px):"
 msgstr "Promień narożnika po najechaniu (px):"
 
-#: qml/configGeneral.qml:382
+#: qml/configGeneral.qml:382 qml/configGeneral.qml:400
 msgid "Max visible items:"
 msgstr "Maksymalna liczba widocznych elementów:"
 
-#: qml/configGeneral.qml:392
+#: qml/configGeneral.qml:392 qml/configGeneral.qml:410
 msgid "Scroll when there are more top-level menus. Set to 0 for no limit."
-msgstr "Przewijaj gdy jest więcej menu najwyższego poziomu. Ustaw 0 aby wyłączyć limit."
+msgstr ""
+"Przewijaj gdy jest więcej menu najwyższego poziomu. Ustaw 0 aby wyłączyć "
+"limit."
 
-#: qml/configGeneral.qml:409
+#: qml/configGeneral.qml:409 qml/configGeneral.qml:427
 msgid "Text"
 msgstr "Tekst"
 
-#: qml/configGeneral.qml:416
+#: qml/configGeneral.qml:416 qml/configGeneral.qml:434
 msgid "Name margins (px):"
 msgstr "Marginesy nazwy (px):"
 
-#: qml/configGeneral.qml:428
+#: qml/configGeneral.qml:428 qml/configGeneral.qml:446
 msgid "Before:"
 msgstr "Przed:"
 
-#: qml/configGeneral.qml:445
+#: qml/configGeneral.qml:445 qml/configGeneral.qml:463
 msgid "After:"
 msgstr "Po:"
 
-#: qml/configGeneral.qml:458
+#: qml/configGeneral.qml:458 qml/configGeneral.qml:476
 msgid "Colors:"
 msgstr "Kolory:"
 
-#: qml/configGeneral.qml:469
+#: qml/configGeneral.qml:469 qml/configGeneral.qml:487
 msgid "Text:"
 msgstr "Tekst"
 
 #: qml/configGeneral.qml:475 qml/configGeneral.qml:491
+#: qml/configGeneral.qml:493 qml/configGeneral.qml:509
 msgid "#RRGGBB or empty"
 msgstr "#RRGGBB lub puste"
 
-#: qml/configGeneral.qml:485
+#: qml/configGeneral.qml:485 qml/configGeneral.qml:503
 msgid "Hover:"
 msgstr "Po najechaniu:"
 
-#: qml/configGeneral.qml:502
+#: qml/configGeneral.qml:502 qml/configGeneral.qml:520
 msgid "Application name font:"
 msgstr "Czcionka nazw aplikacji:"
 
 #: qml/configGeneral.qml:513 qml/configGeneral.qml:536
+#: qml/configGeneral.qml:531 qml/configGeneral.qml:554
 msgctxt "@action:button"
 msgid "Choose Font…"
 msgstr "Wybierz czcionkę…"
 
 #: qml/configGeneral.qml:520 qml/configGeneral.qml:543
+#: qml/configGeneral.qml:538 qml/configGeneral.qml:561
 msgctxt "@action:button"
 msgid "Use system default font"
 msgstr "Użyj domyślnej czcionki systemowej"
 
-#: qml/configGeneral.qml:526
+#: qml/configGeneral.qml:526 qml/configGeneral.qml:544
 msgid "Menu font:"
 msgstr "Czcionka menu:"
 
-#: qml/configGeneral.qml:555
+#: qml/configGeneral.qml:555 qml/configGeneral.qml:573
 msgctxt "@title:window"
 msgid "Choose Font"
 msgstr "Wybierz czcionkę"
 
-#: qml/configGeneral.qml:565
+#: qml/configGeneral.qml:565 qml/configGeneral.qml:583
 msgctxt "@title:window"
 msgid "Choose Application Name Font"
 msgstr "Wybierz czcionkę nazw aplikacji"
@@ -405,3 +412,15 @@ msgstr "Ogólne"
 msgctxt "@info:usagetip"
 msgid "Open a menu"
 msgstr "Otwórz menu"
+
+#: qml/configGeneral.qml:289
+msgid "Exclude items (regex):"
+msgstr "Wyklucz pozycje (regex):"
+
+#: qml/configGeneral.qml:290
+msgid "e.g. ^(Search|Help)$"
+msgstr "np. ^(Search|Help)$"
+
+#: qml/configGeneral.qml:332
+msgid "Show application icon before the menu"
+msgstr "Pokazuj ikonę aplikacji przed menu"

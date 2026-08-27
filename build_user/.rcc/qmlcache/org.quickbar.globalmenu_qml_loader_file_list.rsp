@@ -1,0 +1,12 @@
+--resource
+/home/kevin/Documents/GitHub/quickbar/build_user/.qt/rcc/qmake_plasma_applet_org_quickbar_globalmenu.qrc
+--resource
+/home/kevin/Documents/GitHub/quickbar/build_user/.qt/rcc/org_quickbar_globalmenu_raw_qml_0.qrc
+--resource
+/home/kevin/Documents/GitHub/quickbar/build_user/.qt/rcc/org_quickbar_globalmenu_raw_res_1.qrc
+/qt/qml/plasma/applet/org/quickbar/globalmenu/main.qml
+/qt/qml/plasma/applet/org/quickbar/globalmenu/MenuDelegate.qml
+/qt/qml/plasma/applet/org/quickbar/globalmenu/AppNameLabel.qml
+/qt/qml/plasma/applet/org/quickbar/globalmenu/config.qml
+/qt/qml/plasma/applet/org/quickbar/globalmenu/configGeneral.qml
+/qt/qml/plasma/applet/org/quickbar/globalmenu/configAbout.qml

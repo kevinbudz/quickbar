@@ -36,6 +36,8 @@ class AppMenuModel : public QAbstractListModel
     Q_PROPERTY(bool enableGenericMenu READ enableGenericMenu WRITE setEnableGenericMenu NOTIFY enableGenericMenuChanged)
     Q_PROPERTY(bool enableMenuSearch READ enableMenuSearch WRITE setEnableMenuSearch NOTIFY enableMenuSearchChanged)
     Q_PROPERTY(QString applicationName READ applicationName NOTIFY applicationNameChanged)
+    Q_PROPERTY(QVariant applicationIcon READ applicationIcon NOTIFY applicationIconChanged)
+    Q_PROPERTY(QString excludedItemsRegex READ excludedItemsRegex WRITE setExcludedItemsRegex NOTIFY excludedItemsRegexChanged)
     Q_PROPERTY(bool allScreens READ allScreens WRITE setallScreens NOTIFY allScreensChanged)
 
     Q_PROPERTY(Plasma::Types::ItemStatus containmentStatus MEMBER m_containmentStatus NOTIFY containmentStatusChanged)
@@ -78,10 +80,15 @@ public:
     void setEnableMenuSearch(bool enable);
 
     QString applicationName() const;
+    QVariant applicationIcon() const;
+
+    QString excludedItemsRegex() const;
+    void setExcludedItemsRegex(const QString &regex);
 
     QRect screenGeometry() const;
     void setScreenGeometry(QRect geometry);
     QList<QAction *> flatActionList();
+    QList<QAction *> visibleActions() const;
 
 Q_SIGNALS:
     void requestActivateIndex(int index);
@@ -102,6 +109,8 @@ Q_SIGNALS:
     void enableGenericMenuChanged();
     void enableMenuSearchChanged();
     void applicationNameChanged();
+    void applicationIconChanged();
+    void excludedItemsRegexChanged();
     void modelNeedsUpdate();
     void containmentStatusChanged();
     void screenGeometryChanged();
@@ -118,16 +127,17 @@ private:
     bool m_enableMenuSearch = true;
     bool m_usingGenericMenu = false;
     QString m_applicationName;
+    QVariant m_applicationIcon;
+    QString m_excludedItemsRegex;
+    QRegularExpression m_compiledExcludedRegex;
 
     Plasma::Types::ItemStatus m_containmentStatus = Plasma::Types::PassiveStatus;
 
     void setApplicationName(const QString &name);
+    void setApplicationIcon(const QVariant &icon);
     void applyGenericMenu();
     void clearApplicationMenu();
     bool shouldUseGenericMenu(const QModelIndex &activeTaskIndex) const;
-    qint64 activeTaskPid() const;
-    bool canSignalActiveTask() const;
-    void sendSignalToActiveTask(int signalNumber);
     void quitActiveTask();
     void minimizeActiveTask();
     void maximizeActiveTask();

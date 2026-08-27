@@ -1,0 +1,13 @@
+module plasma.applet.org.quickbar.globalmenu
+typeinfo org.quickbar.globalmenu.qmltypes
+depends QtCore
+depends org.kde.plasma.core
+depends org.kde.kirigami
+depends org.kde.plasma.components
+depends org.kde.kcmutils
+depends org.kde.plasma.configuration
+prefer :/qt/qml/plasma/applet/org/quickbar/globalmenu/
+MenuDelegate 254.0 MenuDelegate.qml
+AppNameLabel 254.0 AppNameLabel.qml
+depends QtQuick
+

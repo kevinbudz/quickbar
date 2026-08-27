@@ -1,0 +1,27 @@
+{
+    "classes": [
+        {
+            "className": "MenuShortcutBridge",
+            "lineNumber": 18,
+            "object": true,
+            "qualifiedClassName": "MenuShortcutBridge",
+            "slots": [
+                {
+                    "access": "private",
+                    "index": 0,
+                    "lineNumber": 28,
+                    "name": "sendPendingShortcut",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "menushortcutsender.h",
+    "outputRevision": 69
+}

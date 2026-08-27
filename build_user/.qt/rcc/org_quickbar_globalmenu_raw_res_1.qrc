@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/qt/qml/plasma/applet/org/quickbar/globalmenu/">
+    <file alias="main.xml">/home/kevin/Documents/GitHub/quickbar/main.xml</file>
+  </qresource>
+</RCC>
+

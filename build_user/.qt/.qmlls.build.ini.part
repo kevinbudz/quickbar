@@ -1,0 +1,3 @@
+[<SLASH>home<SLASH>kevin<SLASH>Documents<SLASH>GitHub<SLASH>quickbar]
+importPaths="/home/kevin/Documents/GitHub/quickbar/build_user/bin:/home/kevin/Documents/GitHub/quickbar/build_user/bin/plasma/applet/org/quickbar/globalmenu:/home/kevin/Documents/GitHub/quickbar/build_user:/usr/lib/qt6/qml"
+resourceFiles="/home/kevin/Documents/GitHub/quickbar/build_user/.qt/rcc/qmake_plasma_applet_org_quickbar_globalmenu.qrc:/home/kevin/Documents/GitHub/quickbar/build_user/.qt/rcc/org_quickbar_globalmenu_raw_qml_0.qrc:/home/kevin/Documents/GitHub/quickbar/build_user/.qt/rcc/org_quickbar_globalmenu_raw_res_1.qrc"

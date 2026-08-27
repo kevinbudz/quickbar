@@ -1,0 +1,1 @@
+plasma.applet.org.quickbar.globalmenu(org.quickbar.globalmenu)

@@ -28,6 +28,7 @@ class QuickBarApplet : public Plasma::Applet
     Q_PROPERTY(int currentIndex READ currentIndex NOTIFY currentIndexChanged)
 
     Q_PROPERTY(QQuickItem *buttonGrid READ buttonGrid WRITE setButtonGrid NOTIFY buttonGridChanged)
+    Q_PROPERTY(bool hoverOpensMenu READ hoverOpensMenu WRITE setHoverOpensMenu NOTIFY hoverOpensMenuChanged)
 
 public:
     enum ViewType {
@@ -45,6 +46,9 @@ public:
     QQuickItem *buttonGrid() const;
     void setButtonGrid(QQuickItem *buttonGrid);
 
+    bool hoverOpensMenu() const;
+    void setHoverOpensMenu(bool hover);
+
     QAbstractItemModel *model() const;
     void setModel(QAbstractItemModel *model);
 
@@ -56,6 +60,7 @@ Q_SIGNALS:
     void viewChanged();
     void currentIndexChanged();
     void buttonGridChanged();
+    void hoverOpensMenuChanged();
     void requestActivateIndex(int index);
 
 public Q_SLOTS:
@@ -68,9 +73,12 @@ private:
     QMenu *createMenu(int idx) const;
     void setCurrentIndex(int currentIndex);
     void onMenuAboutToHide();
+    void installMenuEventFilter(QMenu *menu);
+    void removeMenuEventFilter(QMenu *menu);
 
     int m_currentIndex = -1;
     bool m_pendingMenuSwitch = false;
+    bool m_hoverOpensMenu = true;
     int m_viewType = FullView;
     QPointer<QMenu> m_currentMenu;
     QPointer<QMenu> m_sourceMenu;

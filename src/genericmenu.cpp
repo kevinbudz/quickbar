@@ -15,7 +15,6 @@
 
 namespace
 {
-constexpr auto processSignalProperty = "quickbarProcessSignal";
 constexpr auto genericActionProperty = "quickbarGenericAction";
 constexpr auto quitApplicationAction = "quitApplication";
 constexpr auto minimizeWindowAction = "minimizeWindow";
@@ -26,13 +25,6 @@ QAction *addAction(QMenu *menu, const QString &text, QKeySequence::StandardKey k
 {
     auto *action = menu->addAction(text);
     action->setShortcut(QKeySequence(key));
-    return action;
-}
-
-QAction *addSignalAction(QMenu *menu, const QString &text, int signalNumber)
-{
-    auto *action = menu->addAction(text);
-    action->setProperty(processSignalProperty, signalNumber);
     return action;
 }
 } // namespace
@@ -46,21 +38,8 @@ QMenu *GenericMenu::create(QObject *parent)
     menu->setObjectName(QStringLiteral("quickbar-generic-menu"));
 
     auto *fileMenu = menu->addMenu(i18n("&File"));
-    auto *priorityAction = fileMenu->addAction(i18n("Set priority…"));
-    priorityAction->setEnabled(false);
-
-    auto *signalMenu = fileMenu->addMenu(i18n("Send Signal"));
-    addSignalAction(signalMenu, i18n("Suspend (STOP)"), SIGSTOP);
-    addSignalAction(signalMenu, i18n("Continue (CONT)"), SIGCONT);
-    addSignalAction(signalMenu, i18n("Hangup (HUP)"), SIGHUP);
-    addSignalAction(signalMenu, i18n("Interrupt (INT)"), SIGINT);
-    addSignalAction(signalMenu, i18n("Terminate (TERM)"), SIGTERM);
-    addSignalAction(signalMenu, i18n("Kill (KILL)"), SIGKILL);
-    addSignalAction(signalMenu, i18n("User 1 (USR1)"), SIGUSR1);
-    addSignalAction(signalMenu, i18n("User 2 (USR2)"), SIGUSR2);
-
-    fileMenu->addSeparator();
     auto *quitAction = fileMenu->addAction(i18n("Quit Application"));
+    quitAction->setShortcut(QKeySequence::Close);
     quitAction->setProperty(genericActionProperty, QString::fromLatin1(quitApplicationAction));
 
     auto *editMenu = menu->addMenu(i18n("&Edit"));
