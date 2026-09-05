@@ -450,22 +450,25 @@ void AppMenuModel::onActiveWindowChanged()
         return;
     }
 
-    const QModelIndex activeTaskIndex = m_tasksModel->activeTask();
-
-    if (activeTaskIndex.isValid()) {
-        setApplicationName(m_tasksModel->data(activeTaskIndex, TaskManager::AbstractTasksModel::AppName).toString());
-        QVariant iconVar = m_tasksModel->data(activeTaskIndex, Qt::DecorationRole);
-        if (!iconVar.isValid() || iconVar.isNull()) {
-            iconVar = m_tasksModel->data(activeTaskIndex, TaskManager::AbstractTasksModel::AppId);
+    auto updateAppNameAndIcon = [this](const QModelIndex &index) {
+        if (index.isValid()) {
+            setApplicationName(m_tasksModel->data(index, TaskManager::AbstractTasksModel::AppName).toString());
+            QVariant iconVar = m_tasksModel->data(index, Qt::DecorationRole);
+            if (!iconVar.isValid() || iconVar.isNull()) {
+                iconVar = m_tasksModel->data(index, TaskManager::AbstractTasksModel::AppId);
+            }
+            setApplicationIcon(iconVar);
+        } else if (m_showDesktopMenu) {
+            setApplicationName(i18n("Plasma"));
+            setApplicationIcon(QStringLiteral("plasma"));
+        } else {
+            setApplicationName(QString());
+            setApplicationIcon(QVariant());
         }
-        setApplicationIcon(iconVar);
-    } else if (m_showDesktopMenu) {
-        setApplicationName(i18n("Plasma"));
-        setApplicationIcon(QStringLiteral("plasma"));
-    } else {
-        setApplicationName(QString());
-        setApplicationIcon(QVariant());
-    }
+    };
+
+    const QModelIndex activeTaskIndex = m_tasksModel->activeTask();
+    updateAppNameAndIcon(activeTaskIndex);
 
     if (activeTaskIndex.isValid()) {
         const QString objectPath = m_tasksModel->data(activeTaskIndex, TaskManager::AbstractTasksModel::ApplicationMenuObjectPath).toString();
@@ -486,7 +489,7 @@ void AppMenuModel::onActiveWindowChanged()
         return;
     }
 
-    updateApplicationMenu(QString(), QString());
+    clearApplicationMenu();
 }
 
 bool AppMenuModel::shouldUseGenericMenu(const QModelIndex &activeTaskIndex) const
@@ -649,7 +652,7 @@ void AppMenuModel::applyGenericMenu()
     }
 
     if (!m_genericMenu) {
-        m_genericMenu.reset(GenericMenu::create(this));
+        m_genericMenu.reset(GenericMenu::create());
 
         m_shortcutBridge->wireMenu(m_genericMenu.get());
         wireGenericMenuActions(m_genericMenu.get());
@@ -752,9 +755,6 @@ QVariant AppMenuModel::data(const QModelIndex &index, int role) const
 void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QString &menuObjectPath)
 {
     if (m_serviceName == serviceName && m_menuObjectPath == menuObjectPath) {
-        if (m_importer) {
-            QMetaObject::invokeMethod(m_importer.get(), "updateMenu", Qt::QueuedConnection);
-        }
         return;
     }
 
@@ -779,7 +779,7 @@ void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QStri
         m_menu = m_importer->menu();
         QMetaObject::invokeMethod(m_importer.get(), "updateMenu", Qt::QueuedConnection);
 
-        connect(m_importer.get(), &DBusMenuImporter::menuUpdated, this, [=, this](QMenu *menu) {
+        connect(m_importer.get(), &DBusMenuImporter::menuUpdated, this, [this](QMenu *menu) {
             m_menu = m_importer->menu();
             if (m_menu.isNull() || menu != m_menu) {
                 return;
@@ -828,8 +828,7 @@ void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QStri
         });
 
         connect(m_importer.get(), &DBusMenuImporter::actionActivationRequested, this, [this](QAction *action) {
-            // TODO submenus
-            if (!m_menuAvailable || !m_menu) {
+            if (!m_menuAvailable || !m_menu || !action) {
                 return;
             }
 
@@ -837,6 +836,17 @@ void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QStri
             auto it = std::ranges::find(actions, action);
             if (it != actions.end()) {
                 Q_EMIT requestActivateIndex(it - actions.begin());
+                return;
+            }
+
+            // If action is inside a submenu, find which top-level menu contains it
+            for (int i = 0; i < actions.count(); ++i) {
+                if (QMenu *sub = actions.at(i)->menu()) {
+                    if (sub->findChildren<QAction *>().contains(action)) {
+                        Q_EMIT requestActivateIndex(i);
+                        return;
+                    }
+                }
             }
         });
 

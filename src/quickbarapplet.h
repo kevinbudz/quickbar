@@ -11,8 +11,6 @@
 #include <QAbstractItemModel>
 #include <QPointer>
 
-#include <memory>
-
 class QQuickItem;
 class QMenu;
 
@@ -73,17 +71,13 @@ private:
     QMenu *createMenu(int idx) const;
     void setCurrentIndex(int currentIndex);
     void onMenuAboutToHide();
-    void installMenuEventFilter(QMenu *menu);
-    void removeMenuEventFilter(QMenu *menu);
 
     int m_currentIndex = -1;
-    bool m_pendingMenuSwitch = false;
     bool m_hoverOpensMenu = true;
     int m_viewType = FullView;
     QPointer<QMenu> m_currentMenu;
     QPointer<QMenu> m_sourceMenu;
     QPointer<QQuickItem> m_buttonGrid;
     QPointer<QAbstractItemModel> m_model;
-    std::unique_ptr<QMenu> m_proxyMenu;
     static int s_refs;
 };

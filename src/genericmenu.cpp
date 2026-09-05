@@ -29,12 +29,9 @@ QAction *addAction(QMenu *menu, const QString &text, QKeySequence::StandardKey k
 }
 } // namespace
 
-QMenu *GenericMenu::create(QObject *parent)
+QMenu *GenericMenu::create(QWidget *parent)
 {
-    auto *menu = new QMenu;
-    if (parent) {
-        menu->QObject::setParent(parent);
-    }
+    auto *menu = new QMenu(parent);
     menu->setObjectName(QStringLiteral("quickbar-generic-menu"));
 
     auto *fileMenu = menu->addMenu(i18n("&File"));

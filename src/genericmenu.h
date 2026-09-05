@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <QObject>
-
 class QMenu;
+class QWidget;
 
 namespace GenericMenu
 {
-QMenu *create(QObject *parent);
+QMenu *create(QWidget *parent = nullptr);
 }
+

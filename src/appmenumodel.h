@@ -94,6 +94,7 @@ Q_SIGNALS:
     void requestActivateIndex(int index);
     void bringToFocus(int index);
     void requestOpenAbout();
+    void menuUpdated(QMenu *menu);
 
 private Q_SLOTS:
     void onActiveWindowChanged();
