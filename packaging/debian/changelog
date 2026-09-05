@@ -1,3 +1,10 @@
+quickbar (1.1-1) unstable; urgency=medium
+
+  * Release 1.1: fix max-visible-items scrolling (pinned app-name prefix,
+    thin scrollbar, drag/wheel scrolling).
+
+ -- Kevin Budz <kevin.budz052@gmail.com>  Sat, 05 Sep 2026 14:29:10 -0500
+
 quickbar (1.0-1) unstable; urgency=medium
 
   * Release 1.0.

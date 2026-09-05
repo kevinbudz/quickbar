@@ -1,5 +1,5 @@
 Name:           quickbar
-Version:        1.0
+Version:        1.1
 Release:        1%{?dist}
 Summary:        Configurable Plasma 6 global menu panel widget
 
@@ -73,6 +73,9 @@ the stock Global Menu widget. Do not run both at once.
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_org.quickbar.globalmenu.mo
 
 %changelog
+* Sat Sep 05 2026 Kevin Budz <kevin.budz052@gmail.com> - 1.1-1
+- Release 1.1: fix max-visible-items scrolling (pinned app-name prefix, thin scrollbar, drag/wheel scrolling)
+
 * Sat Sep 05 2026 Kevin Budz <kevin.budz052@gmail.com> - 1.0-1
 - Release 1.0
 
