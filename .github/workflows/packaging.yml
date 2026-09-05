@@ -78,7 +78,7 @@ jobs:
           cd "$work"
           sed -i "s/^pkgver=.*/pkgver=${ver}/" PKGBUILD
           su builder -c "updpkgsums && makepkg -f --noconfirm"
-          test -f pkg/*/usr/lib/qt6/plugins/plasma/applets/org.quickbar.globalmenu.so
+          find pkg -name org.quickbar.globalmenu.so | grep -q .
 
   fedora:
     name: Build (Fedora)

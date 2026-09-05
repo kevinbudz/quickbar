@@ -42,8 +42,7 @@ the stock Global Menu widget. Do not run both at once.
 %autosetup -n quickbar-%{version}
 
 %build
-%cmake -B build -S . \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
 %cmake_build
 
 %install
