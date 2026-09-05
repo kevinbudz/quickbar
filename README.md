@@ -15,11 +15,11 @@ A Plasma 6+ panel widget that shows the active application's global menu (the sa
 |--------|--------|---------|
 | Arch / CachyOS | AUR | `plasma6-applets-quickbar` |
 | openSUSE Tumbleweed | OBS (`home:kevinbudz`) | `quickbar` |
-| Fedora 42 / 43 | OBS (`home:kevinbudz`) | `quickbar` |
+| Fedora 43 / 44 | OBS (`home:kevinbudz`) | `quickbar` |
 | Debian / Ubuntu (Plasma 6 only) | Manual `.deb` build | `quickbar` |
 | Any distro | `install.sh` / CMake from source | — |
 
-Requires Plasma 6.5+ (KF6 / Qt6). Older stacks (e.g. Fedora ≤ 41's Plasma 6.2–6.4, Debian Trixie stock / Ubuntu 25.04's Plasma 6.3) fail configure with a clear message.
+Requires Plasma 6.5+ (KF6 / Qt6). Older stacks (e.g. Fedora ≤ 42's Plasma ≤ 6.4, Debian Trixie stock / Ubuntu 25.04's Plasma 6.3) fail configure with a clear message.
 
 ### Arch / CachyOS (AUR)
 
@@ -39,11 +39,11 @@ sudo zypper install quickbar
 ### Fedora (OBS)
 
 ```bash
-sudo dnf config-manager addrepo --from-repofile=https://download.opensuse.org/repositories/home:kevinbudz/Fedora_42/home:kevinbudz.repo
+sudo dnf config-manager addrepo --from-repofile=https://download.opensuse.org/repositories/home:kevinbudz/Fedora_43/home:kevinbudz.repo
 sudo dnf install quickbar
 ```
 
-(Use `Fedora_43` in the URL on Fedora 43. The old `Fedora_41`/`Fedora_40` repos were dropped — they ship Plasma 6.2, which predates the `plasma_add_applet()` CMake macro. If you are on an older Fedora, build the RPM locally:)
+(Use `Fedora_44` in the URL on Fedora 44. Repos for EOL releases — `Fedora_41`/`Fedora_40` (Plasma 6.2, predates the `plasma_add_applet()` CMake macro) and `Fedora_42` (removed from Fedora mirrors) — were dropped. If you are on an older Fedora, build the RPM locally:)
 
 ```bash
 cd /path/to/quickbar
@@ -61,7 +61,7 @@ sudo dnf install ~/rpmbuild/RPMS/x86_64/quickbar-*.rpm
 
 ### Debian / Ubuntu (manual `.deb` build)
 
-On **Plasma 6.5+** systems only (e.g. Arch, Tumbleweed, Fedora 42/43 with updates, current KDE Neon). Debian Trixie stock and Ubuntu ≤ 25.04 ship older Plasma and are unsupported. There is no APT repo yet — build locally:
+On **Plasma 6.5+** systems only (e.g. Arch, Tumbleweed, Fedora 43/44 with updates, current KDE Neon). Debian Trixie stock and Ubuntu ≤ 25.04 ship older Plasma and are unsupported. There is no APT repo yet — build locally:
 
 ```bash
 cd /path/to/quickbar
