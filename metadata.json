@@ -13,7 +13,7 @@
         "Icon": "show-menu",
         "License": "GPL-2.0-or-later",
         "Name": "quickbar",
-        "Version": "1.11",
+        "Version": "1.12",
         "Website": "https://github.com/kevinbudz/quickbar/"
     },
     "X-Plasma-API-Minimum-Version": "6.0",

@@ -1,3 +1,11 @@
+quickbar (1.12-1) unstable; urgency=medium
+
+  * Release 1.12: vertical button centering setting (also when
+    scrolling, default on), robust cap re-measure poller, app-name
+    always centered in bar.
+
+ -- Kevin Budz <kevin.budz052@gmail.com>  Sat, 05 Sep 2026 16:19:05 -0500
+
 quickbar (1.11-1) unstable; urgency=medium
 
   * Release 1.11: fix menu cap measurement after model reset, gate

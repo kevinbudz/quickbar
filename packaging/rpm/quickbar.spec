@@ -1,5 +1,5 @@
 Name:           quickbar
-Version:        1.11
+Version:        1.12
 Release:        1%{?dist}
 Summary:        Configurable Plasma 6 global menu panel widget
 
@@ -73,6 +73,9 @@ the stock Global Menu widget. Do not run both at once.
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_org.quickbar.globalmenu.mo
 
 %changelog
+* Sat Sep 05 2026 Kevin Budz <kevin.budz052@gmail.com> - 1.12-1
+- Release 1.12: vertical button centering setting (also when scrolling, default on), robust cap re-measure poller, app-name always centered in bar
+
 * Sat Sep 05 2026 Kevin Budz <kevin.budz052@gmail.com> - 1.11-1
 - Release 1.11: fix menu cap measurement after model reset, gate scrolling/scrollbars on actual overflow, fix config layout narrow-mode flip
 
