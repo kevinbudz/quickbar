@@ -4,7 +4,7 @@ A Plasma 6+ panel widget that shows the active application's global menu (the sa
 
 ## Requirements
 
-- Plasma 6.0+ (KF6 / Qt6)
+- Plasma 6.3+ (KF6 / Qt6) — `plasma_add_applet()` requires libplasma ≥ 6.3
 - Build deps: `cmake`, `extra-cmake-modules`, `gcc`, `libplasma`, `plasma-workspace` (LibTaskManager), `qt6-base`, `qt6-declarative`, `kconfig`, `kcoreaddons`, `ki18n`, `kitemmodels`, `kwindowsystem`, `kirigami`
 
 `libdbusmenuqt` is vendored from plasma-workspace (no separate package required).
@@ -15,11 +15,11 @@ A Plasma 6+ panel widget that shows the active application's global menu (the sa
 |--------|--------|---------|
 | Arch / CachyOS | AUR | `plasma6-applets-quickbar` |
 | openSUSE Tumbleweed | OBS (`home:kevinbudz`) | `quickbar` |
-| Fedora 41 / 40 | OBS (`home:kevinbudz`) — ⚠️ build currently failing, use manual RPM build below | `quickbar` |
+| Fedora 42 / 43 | OBS (`home:kevinbudz`) | `quickbar` |
 | Debian / Ubuntu (Plasma 6 only) | Manual `.deb` build | `quickbar` |
 | Any distro | `install.sh` / CMake from source | — |
 
-Requires Plasma 6.0+ (KF6 / Qt6). It will not build against Plasma 5 (e.g. Debian 12 / Ubuntu 22.04 LTS without a newer KDE stack).
+Requires Plasma 6.3+ (KF6 / Qt6). It will not build against older Plasma (e.g. Fedora 41's Plasma 6.2, Debian 12 / Ubuntu 22.04's Plasma 5).
 
 ### Arch / CachyOS (AUR)
 
@@ -36,9 +36,14 @@ sudo zypper refresh
 sudo zypper install quickbar
 ```
 
-### Fedora (manual RPM build)
+### Fedora (OBS)
 
-The OBS Fedora repos (`Fedora_41`, `Fedora_40`) are set up but currently failing to build (`plasma_add_applet` unknown on F41). Until that is fixed, build locally:
+```bash
+sudo dnf config-manager addrepo --from-repofile=https://download.opensuse.org/repositories/home:kevinbudz/Fedora_42/home:kevinbudz.repo
+sudo dnf install quickbar
+```
+
+(Use `Fedora_43` in the URL on Fedora 43. The old `Fedora_41`/`Fedora_40` repos were dropped — they ship Plasma 6.2, which predates the `plasma_add_applet()` CMake macro. If you are on an older Fedora, build the RPM locally:)
 
 ```bash
 cd /path/to/quickbar
@@ -54,16 +59,9 @@ rpmbuild -ba packaging/rpm/quickbar.spec
 sudo dnf install ~/rpmbuild/RPMS/x86_64/quickbar-*.rpm
 ```
 
-Once OBS is green, the repo install will be:
-
-```bash
-sudo dnf config-manager addrepo --from-repofile=https://download.opensuse.org/repositories/home:kevinbudz/Fedora_41/home:kevinbudz.repo
-sudo dnf install quickbar
-```
-
 ### Debian / Ubuntu (manual `.deb` build)
 
-On **Plasma 6** systems only (e.g. Debian Trixie/testing, Ubuntu 24.10+, KDE Neon). There is no APT repo yet — build locally:
+On **Plasma 6.3+** systems only (e.g. Debian Trixie, Ubuntu 25.04+, up-to-date KDE Neon). There is no APT repo yet — build locally:
 
 ```bash
 cd /path/to/quickbar

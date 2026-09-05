@@ -23,8 +23,15 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Quick DBus)
 find_package(X11 QUIET COMPONENTS Xtst)
 # Plasma::Plasma links KF6::ConfigCore, KF6::CoreAddons, etc. — find them before Plasma
 find_package(KF6 REQUIRED COMPONENTS Config CoreAddons I18n WindowSystem)
-find_package(Plasma REQUIRED)
+find_package(Plasma 6.3 REQUIRED)
 find_package(LibTaskManager REQUIRED)
+
+# plasma_add_applet() was introduced in libplasma 6.3. Older Plasma
+# (e.g. Fedora 41's 6.2) configures with a cryptic
+# "Unknown CMake command plasma_add_applet" — fail early with a clear message.
+if(NOT COMMAND plasma_add_applet)
+    message(FATAL_ERROR "plasma_add_applet() not provided by the found libplasma (${Plasma_VERSION}). QuickBar requires libplasma >= 6.3 (Plasma 6.3+).")
+endif()
 
 # libdbusmenuqt is vendored from plasma-workspace (not packaged separately on most distros)
 add_subdirectory(third_party/libdbusmenuqt)
