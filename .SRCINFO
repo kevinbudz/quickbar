@@ -1,6 +1,6 @@
 pkgbase = plasma6-applets-quickbar
 	pkgdesc = Configurable Plasma 6 global menu panel widget (QuickBar)
-	pkgver = 0.2.1
+	pkgver = 1.0
 	pkgrel = 1
 	url = https://github.com/kevinbudz/quickbar
 	arch = x86_64
@@ -21,7 +21,7 @@ pkgbase = plasma6-applets-quickbar
 	depends = kwindowsystem
 	depends = kirigami
 	optdepends = dolphin: Finder-style desktop menu (Dolphin menu bar on desktop)
-	source = https://github.com/kevinbudz/quickbar/archive/refs/tags/v0.2.1.tar.gz
+	source = https://github.com/kevinbudz/quickbar/archive/refs/tags/v1.0.tar.gz
 	sha256sums = 64755ac6b116ecda0a83350f9cffde479f68e9c24a189407143e11cf1180608c
 
 pkgname = plasma6-applets-quickbar

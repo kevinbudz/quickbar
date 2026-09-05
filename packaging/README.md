@@ -14,11 +14,11 @@ QuickBar is a compiled Plasma 6 applet. These recipes install:
 | Debian / Ubuntu / Mint | [`debian/`](debian/) | `quickbar` |
 | Fedora / RHEL / openSUSE | [`rpm/quickbar.spec`](rpm/quickbar.spec) | `quickbar` |
 
-Keep `pkgver` / `Version` / `changelog` in sync with `project(quickbar VERSION …)` in the root `CMakeLists.txt` and tag releases as `v0.2.1` on GitHub.
+Keep `pkgver` / `Version` / `changelog` in sync with `project(quickbar VERSION …)` in the root `CMakeLists.txt` and tag releases as `v1.0` on GitHub.
 
 ## Arch Linux (AUR)
 
-1. Tag a release: `git tag v0.2.1 && git push origin v0.2.1`
+1. Tag a release: `git tag v1.0 && git push origin v1.0`
 2. Clone the empty AUR package (first time only):
 
    ```bash
@@ -82,7 +82,7 @@ rpmbuild -ba packaging/rpm/quickbar.spec \
 sudo dnf install packaging/rpm/x86_64/quickbar-*.rpm
 ```
 
-For a clean build from the release tarball, place `quickbar-0.2.1.tar.gz` in `~/rpmbuild/SOURCES/` (or set `_sourcedir` as above) before `rpmbuild`.
+For a clean build from the release tarball, place `quickbar-1.0.tar.gz` in `~/rpmbuild/SOURCES/` (or set `_sourcedir` as above) before `rpmbuild`.
 
 ## openSUSE Build Service (optional)
 

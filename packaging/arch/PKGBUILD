@@ -1,6 +1,6 @@
 # Maintainer: Kevin Budz <https://github.com/kevinbudz>
 pkgname=plasma6-applets-quickbar
-pkgver=0.2.1
+pkgver=1.0
 pkgrel=1
 pkgdesc="Configurable Plasma 6 global menu panel widget (QuickBar)"
 arch=('x86_64' 'aarch64')

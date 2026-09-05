@@ -72,10 +72,12 @@ jobs:
           work=/tmp/makepkg-test
           mkdir -p "$work"
           cp packaging/arch/PKGBUILD "$work/"
+          useradd -m -d /home/builder builder || true
+          echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+          chown -R builder:builder "$work"
           cd "$work"
           sed -i "s/^pkgver=.*/pkgver=${ver}/" PKGBUILD
-          updpkgsums
-          makepkg -f --noconfirm
+          su builder -c "updpkgsums && makepkg -f --noconfirm"
           test -f pkg/plasma6-applets-quickbar-*/usr/lib/qt6/plugins/plasma/applets/org.quickbar.globalmenu.so
 
   fedora:
@@ -126,3 +128,65 @@ jobs:
           url="https://github.com/${{ github.repository }}/archive/refs/tags/v${ver}.tar.gz"
           echo "Checking ${url}"
           curl -fsSIL -o /dev/null -w '%{http_code}\n' "${url}" | grep -q '^200$'
+
+  aur-publish:
+    name: Publish to AUR
+    needs: [arch, fedora, release-tarball]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pacman dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm --needed base-devel pacman-contrib git openssh curl
+
+      - name: Configure SSH
+        run: |
+          mkdir -p -m 700 /root/.ssh
+          echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > /root/.ssh/aur_deploy
+          chmod 600 /root/.ssh/aur_deploy
+          ssh-keyscan -t ed25519 aur.archlinux.org >> /root/.ssh/known_hosts
+
+      - name: Setup builder user
+        run: |
+          useradd -m -d /home/builder builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+          mkdir -p -m 700 /home/builder/.ssh
+          cp /root/.ssh/aur_deploy /home/builder/.ssh/
+          cp /root/.ssh/known_hosts /home/builder/.ssh/
+          chown -R builder:builder /home/builder/.ssh
+
+      - name: Push to AUR
+        env:
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          su builder -c "
+            set -e
+            git config --global user.name \"Kevin Budz\"
+            git config --global user.email \"kevin.budz052@gmail.com\"
+            export GIT_SSH_COMMAND=\"ssh -i /home/builder/.ssh/aur_deploy -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes\"
+            
+            git clone ssh://aur@aur.archlinux.org/plasma6-applets-quickbar.git /home/builder/aur-repo
+            cd /home/builder/aur-repo
+            
+            cp \"\$WORKSPACE/packaging/arch/PKGBUILD\" ./PKGBUILD
+            sed -i \"s/^pkgver=.*/pkgver=\${ver}/\" PKGBUILD
+            sed -i \"s/^pkgrel=.*/pkgrel=1/\" PKGBUILD
+            
+            updpkgsums
+            makepkg --printsrcinfo > .SRCINFO
+            
+            git add PKGBUILD .SRCINFO
+            if git diff --cached --quiet; then
+              echo 'No changes to commit'
+            else
+              git commit -m \"Release: \${ver}\"
+              git push origin master
+            fi
+          "

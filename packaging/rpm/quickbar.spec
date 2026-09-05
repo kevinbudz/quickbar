@@ -1,5 +1,5 @@
 Name:           quickbar
-Version:        0.2.1
+Version:        1.0
 Release:        1%{?dist}
 Summary:        Configurable Plasma 6 global menu panel widget
 
@@ -53,6 +53,9 @@ the stock Global Menu widget. Do not run both at once.
 %{_libdir}/qt6/plugins/plasma/applets/org.quickbar.globalmenu.so
 
 %changelog
+* Sat Sep 05 2026 Kevin Budz <https://github.com/kevinbudz> - 1.0-1
+- Release 1.0
+
 * Fri May 22 2026 Kevin Budz <https://github.com/kevinbudz> - 0.2.1-1
 - Release 0.2.1
 
