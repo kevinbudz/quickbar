@@ -11,6 +11,7 @@
 #include <QAction>
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
+#include <QDBusServiceWatcher>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMouseEvent>
@@ -20,7 +21,9 @@
 #include <QTimer>
 #include <QWindow>
 
-int QuickBarApplet::s_refs = 0;
+QSet<QuickBarApplet *> QuickBarApplet::s_activeApplets;
+QPointer<QDBusServiceWatcher> QuickBarApplet::s_serviceWatcher;
+
 namespace
 {
 QString viewService()
@@ -29,42 +32,93 @@ QString viewService()
 }
 }
 
+void QuickBarApplet::registerService()
+{
+    auto bus = QDBusConnection::sessionBus();
+    if (!bus.isConnected() || !bus.interface()) {
+        return;
+    }
+    if (!bus.interface()->isServiceRegistered(viewService())) {
+        bus.interface()->registerService(viewService(),
+                                         QDBusConnectionInterface::QueueService,
+                                         QDBusConnectionInterface::DontAllowReplacement);
+    }
+}
+
+void QuickBarApplet::unregisterService()
+{
+    auto bus = QDBusConnection::sessionBus();
+    if (!bus.isConnected() || !bus.interface()) {
+        return;
+    }
+    if (bus.interface()->isServiceRegistered(viewService())) {
+        bus.interface()->unregisterService(viewService());
+    }
+}
+
+void QuickBarApplet::ensureServiceRegistered()
+{
+    if (!s_activeApplets.isEmpty()) {
+        registerService();
+    }
+}
+
+void QuickBarApplet::onAppletCreated(QuickBarApplet *applet)
+{
+    s_activeApplets.insert(applet);
+    registerService();
+
+    if (!s_serviceWatcher) {
+        s_serviceWatcher = new QDBusServiceWatcher(viewService(),
+                                                   QDBusConnection::sessionBus(),
+                                                   QDBusServiceWatcher::WatchForUnregistration);
+        QObject::connect(s_serviceWatcher.data(), &QDBusServiceWatcher::serviceUnregistered, [](const QString &service) {
+            if (service == viewService() && !s_activeApplets.isEmpty()) {
+                registerService();
+            }
+        });
+    }
+}
+
+void QuickBarApplet::onAppletDestroyed(QuickBarApplet *applet)
+{
+    s_activeApplets.remove(applet);
+    if (s_activeApplets.isEmpty()) {
+        unregisterService();
+        if (s_serviceWatcher) {
+            delete s_serviceWatcher.data();
+            s_serviceWatcher = nullptr;
+        }
+    }
+}
+
+void QuickBarApplet::onAppletDestroyedChanged(QuickBarApplet *applet, bool destroyed)
+{
+    if (destroyed) {
+        s_activeApplets.remove(applet);
+        if (s_activeApplets.isEmpty()) {
+            unregisterService();
+        }
+    } else {
+        s_activeApplets.insert(applet);
+        registerService();
+    }
+}
+
 QuickBarApplet::QuickBarApplet(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
     : Plasma::Applet(parent, data, args)
 {
-    ++s_refs;
-    // if we're the first, register the service
-    if (s_refs == 1) {
-        QDBusConnection::sessionBus().interface()->registerService(viewService(),
-                                                                   QDBusConnectionInterface::QueueService,
-                                                                   QDBusConnectionInterface::DontAllowReplacement);
-    }
-    /*it registers or unregisters the service when the destroyed value of the applet change,
-      and not in the dtor, because:
-      when we "delete" an applet, it just hides it for about a minute setting its status
-      to destroyed, in order to be able to do a clean undo: if we undo, there will be
-      another destroyedchanged and destroyed will be false.
-      When this happens, if we are the only appmenu applet existing, the dbus interface
-      will have to be registered again*/
-    connect(this, &Applet::destroyedChanged, this, [](bool destroyed) {
-        if (destroyed) {
-            // if we were the last, unregister
-            if (--s_refs == 0) {
-                QDBusConnection::sessionBus().interface()->unregisterService(viewService());
-            }
-        } else {
-            // if we're the first, register the service
-            if (++s_refs == 1) {
-                QDBusConnection::sessionBus().interface()->registerService(viewService(),
-                                                                            QDBusConnectionInterface::QueueService,
-                                                                            QDBusConnectionInterface::DontAllowReplacement);
-            }
-        }
+    onAppletCreated(this);
+
+    connect(this, &Applet::destroyedChanged, this, [this](bool destroyed) {
+        onAppletDestroyedChanged(this, destroyed);
     });
 }
 
 QuickBarApplet::~QuickBarApplet()
 {
+    onAppletDestroyed(this);
+
     if (m_currentMenu && m_sourceMenu && m_currentMenu != m_sourceMenu) {
         auto menuAction = m_currentMenu->menuAction();
         for (QAction *action : m_currentMenu->actions()) {

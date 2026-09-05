@@ -6,6 +6,7 @@
 */
 
 #include "appmenumodel.h"
+#include "quickbarapplet.h"
 
 #include "genericmenu.h"
 #include "menushortcutsender.h"
@@ -136,8 +137,8 @@ AppMenuModel::AppMenuModel(QObject *parent)
     // we'll select the new menu when the focus changes
     connect(m_serviceWatcher, &QDBusServiceWatcher::serviceUnregistered, this, [this](const QString &serviceName) {
         if (serviceName == m_serviceName) {
-            setMenuAvailable(false);
-            Q_EMIT modelNeedsUpdate();
+            clearApplicationMenu();
+            onActiveWindowChanged();
         }
     });
 
@@ -444,6 +445,8 @@ void AppMenuModel::update()
 
 void AppMenuModel::onActiveWindowChanged()
 {
+    QuickBarApplet::ensureServiceRegistered();
+
     // Do not change active window when panel gets focus
     // See ShellCorona::init() in shell/shellcorona.cpp
     if (m_containmentStatus == Plasma::Types::AcceptingInputStatus) {
@@ -628,7 +631,7 @@ bool AppMenuModel::genericMenuHasDuplicateActions(const QMenu *menu) const
     return false;
 }
 
-void AppMenuModel::applyGenericMenu()
+void AppMenuModel::ensureGenericMenuCreated()
 {
     if (m_genericMenu && genericMenuHasDuplicateActions(m_genericMenu.get())) {
         // Avoid deleting the generic menu while a proxy clone might be visible.
@@ -674,6 +677,11 @@ void AppMenuModel::applyGenericMenu()
     }
 
     updateGenericMenuActionState();
+}
+
+void AppMenuModel::applyGenericMenu()
+{
+    ensureGenericMenuCreated();
 
     if (m_usingGenericMenu && m_menu == m_genericMenu.get() && m_menuAvailable) {
         setVisible(true);
@@ -755,6 +763,9 @@ QVariant AppMenuModel::data(const QModelIndex &index, int role) const
 void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QString &menuObjectPath)
 {
     if (m_serviceName == serviceName && m_menuObjectPath == menuObjectPath) {
+        if (m_importer) {
+            QMetaObject::invokeMethod(m_importer.get(), "updateMenu", Qt::QueuedConnection);
+        }
         return;
     }
 
@@ -780,15 +791,20 @@ void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QStri
         QMetaObject::invokeMethod(m_importer.get(), "updateMenu", Qt::QueuedConnection);
 
         connect(m_importer.get(), &DBusMenuImporter::menuUpdated, this, [this](QMenu *menu) {
-            m_menu = m_importer->menu();
-            if (m_menu.isNull() || menu != m_menu) {
+            QMenu *currentImporterMenu = m_importer ? m_importer->menu() : nullptr;
+            if (!currentImporterMenu || menu != currentImporterMenu) {
                 return;
             }
 
-            if (m_menu->isEmpty()) {
+            if (currentImporterMenu->isEmpty()) {
                 // naughty apps may pretend to have a menu but then don't actually give us one.
                 if (shouldUseGenericMenu(m_tasksModel->activeTask())) {
-                    applyGenericMenu();
+                    ensureGenericMenuCreated();
+                    m_usingGenericMenu = true;
+                    m_menu = m_genericMenu.get();
+                    setMenuAvailable(true);
+                    setVisible(true);
+                    Q_EMIT modelNeedsUpdate();
                     return;
                 }
                 if (m_menuAvailable) {
@@ -799,6 +815,8 @@ void AppMenuModel::updateApplicationMenu(const QString &serviceName, const QStri
                 return;
             } else {
                 // if it somehow comes later, make it available again
+                m_usingGenericMenu = false;
+                m_menu = currentImporterMenu;
                 setMenuAvailable(true);
             }
 

@@ -136,6 +136,7 @@ private:
 
     void setApplicationName(const QString &name);
     void setApplicationIcon(const QVariant &icon);
+    void ensureGenericMenuCreated();
     void applyGenericMenu();
     void clearApplicationMenu();
     bool shouldUseGenericMenu(const QModelIndex &activeTaskIndex) const;

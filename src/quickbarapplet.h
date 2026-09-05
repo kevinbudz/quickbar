@@ -10,9 +10,11 @@
 
 #include <QAbstractItemModel>
 #include <QPointer>
+#include <QSet>
 
 class QQuickItem;
 class QMenu;
+class QDBusServiceWatcher;
 
 class QuickBarApplet : public Plasma::Applet
 {
@@ -53,6 +55,8 @@ public:
     int view() const;
     void setView(int type);
 
+    static void ensureServiceRegistered();
+
 Q_SIGNALS:
     void modelChanged();
     void viewChanged();
@@ -72,6 +76,15 @@ private:
     void setCurrentIndex(int currentIndex);
     void onMenuAboutToHide();
 
+    static void registerService();
+    static void unregisterService();
+    static void onAppletCreated(QuickBarApplet *applet);
+    static void onAppletDestroyed(QuickBarApplet *applet);
+    static void onAppletDestroyedChanged(QuickBarApplet *applet, bool destroyed);
+
+    static QSet<QuickBarApplet *> s_activeApplets;
+    static QPointer<QDBusServiceWatcher> s_serviceWatcher;
+
     int m_currentIndex = -1;
     bool m_hoverOpensMenu = true;
     int m_viewType = FullView;
@@ -79,5 +92,4 @@ private:
     QPointer<QMenu> m_sourceMenu;
     QPointer<QQuickItem> m_buttonGrid;
     QPointer<QAbstractItemModel> m_model;
-    static int s_refs;
 };
