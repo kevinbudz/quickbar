@@ -12,3 +12,6 @@ CMakeFiles/
 compile_commands.json
 *.qm
 po/*.mo
+/build_user
+/build_user/.qt
+/build_user

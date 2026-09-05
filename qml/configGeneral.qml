@@ -380,7 +380,6 @@ KCMUtils.SimpleKCM {
 
                 Kirigami.FormLayout {
                     Layout.fillWidth: true
-                    rowSpacing: Kirigami.Units.smallSpacing
 
                     QQC2.SpinBox {
                         id: itemSpacingSpin
@@ -402,14 +401,18 @@ KCMUtils.SimpleKCM {
                         from: 0
                         to: 50
                     }
+                }
 
-                    QQC2.Label {
-                        Kirigami.FormData.label: " "
-                        Layout.fillWidth: true
-                        wrapMode: Text.WordWrap
-                        opacity: 0.75
-                        text: i18n("Show at most N top-level menus. Drag, use the mouse wheel, or drag the thin scrollbar to reach the rest. Set to 0 for no limit.")
-                    }
+                // NOTE: keep this helper OUT of the FormLayout above. FormLayout
+                // flips to narrow mode (labels stacked above controls) when its
+                // width drops below its widest field's unwrapped implicitWidth,
+                // and this long wrapping label would single-handedly trip that
+                // threshold — longer translations would too.
+                QQC2.Label {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    opacity: 0.75
+                    text: i18n("Show at most N top-level menus. Drag, use the mouse wheel, or drag the thin scrollbar to reach the rest. Set to 0 for no limit.")
                 }
             }
 
