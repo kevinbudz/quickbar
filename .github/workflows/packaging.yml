@@ -78,7 +78,7 @@ jobs:
           cd "$work"
           sed -i "s/^pkgver=.*/pkgver=${ver}/" PKGBUILD
           su builder -c "updpkgsums && makepkg -f --noconfirm"
-          test -f pkg/plasma6-applets-quickbar-*/usr/lib/qt6/plugins/plasma/applets/org.quickbar.globalmenu.so
+          test -f pkg/*/usr/lib/qt6/plugins/plasma/applets/org.quickbar.globalmenu.so
 
   fedora:
     name: Build (Fedora)
@@ -91,7 +91,7 @@ jobs:
       - name: Install build dependencies
         run: |
           dnf install -y \
-            cmake extra-cmake-modules gcc-c++ \
+            cmake extra-cmake-modules gcc-c++ rpm-build \
             qt6-qtbase-devel qt6-qtdeclarative-devel \
             libplasma-devel plasma-workspace-devel \
             kf6-kconfig-devel kf6-kcoreaddons-devel kf6-ki18n-devel \
@@ -170,7 +170,7 @@ jobs:
             set -e
             git config --global user.name \"Kevin Budz\"
             git config --global user.email \"kevin.budz052@gmail.com\"
-            export GIT_SSH_COMMAND=\"ssh -i /home/builder/.ssh/aur_deploy -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes\"
+            export GIT_SSH_COMMAND=\"ssh -i /home/builder/.ssh/aur_deploy -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes -o KexAlgorithms=curve25519-sha256\"
             
             git clone ssh://aur@aur.archlinux.org/plasma6-applets-quickbar.git /home/builder/aur-repo
             cd /home/builder/aur-repo
