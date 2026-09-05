@@ -1,2 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Exclude OBS-hostile symlinks from `git archive` tarballs (GitHub release
+# archives + OBS download_files). The root `debian` symlink would collide
+# with the real debian/ dir that debtransform assembles from debian.* files.
+# Anchored to root so packaging/debian/ (real dir) stays in the archive.
+/debian export-ignore
+/quickbar.spec export-ignore

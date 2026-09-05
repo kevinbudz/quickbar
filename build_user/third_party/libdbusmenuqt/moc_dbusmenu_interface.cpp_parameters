@@ -1,7 +1,0 @@
--I/home/kevin/Documents/GitHub/quickbar/third_party/libdbusmenuqt
--I/home/kevin/Documents/GitHub/quickbar/build_user/third_party/libdbusmenuqt
--D_GNU_SOURCE
--D_LARGEFILE64_SOURCE
--o
-/home/kevin/Documents/GitHub/quickbar/build_user/third_party/libdbusmenuqt/moc_dbusmenu_interface.cpp
-/home/kevin/Documents/GitHub/quickbar/build_user/third_party/libdbusmenuqt/dbusmenu_interface.h

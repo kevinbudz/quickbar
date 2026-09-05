@@ -1,5 +1,6 @@
 plasma6-applets-quickbar/
 build/
+build_user/
 pkg/
 package/
 scripts/
