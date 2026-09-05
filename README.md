@@ -4,7 +4,7 @@ A Plasma 6+ panel widget that shows the active application's global menu (the sa
 
 ## Requirements
 
-- Plasma 6.3+ (KF6 / Qt6) — `plasma_add_applet()` requires libplasma ≥ 6.3
+- Plasma 6.5+ (KF6 / Qt6) — `plasma_add_applet()` needs libplasma ≥ 6.3, the `org.kde.plasma.configuration` QML module needs ≥ 6.5
 - Build deps: `cmake`, `extra-cmake-modules`, `gcc`, `libplasma`, `plasma-workspace` (LibTaskManager), `qt6-base`, `qt6-declarative`, `kconfig`, `kcoreaddons`, `ki18n`, `kitemmodels`, `kwindowsystem`, `kirigami`
 
 `libdbusmenuqt` is vendored from plasma-workspace (no separate package required).
@@ -19,7 +19,7 @@ A Plasma 6+ panel widget that shows the active application's global menu (the sa
 | Debian / Ubuntu (Plasma 6 only) | Manual `.deb` build | `quickbar` |
 | Any distro | `install.sh` / CMake from source | — |
 
-Requires Plasma 6.3+ (KF6 / Qt6). It will not build against older Plasma (e.g. Fedora 41's Plasma 6.2, Debian 12 / Ubuntu 22.04's Plasma 5).
+Requires Plasma 6.5+ (KF6 / Qt6). Older stacks (e.g. Fedora ≤ 41's Plasma 6.2–6.4, Debian Trixie stock / Ubuntu 25.04's Plasma 6.3) fail configure with a clear message.
 
 ### Arch / CachyOS (AUR)
 
@@ -61,7 +61,7 @@ sudo dnf install ~/rpmbuild/RPMS/x86_64/quickbar-*.rpm
 
 ### Debian / Ubuntu (manual `.deb` build)
 
-On **Plasma 6.3+** systems only (e.g. Debian Trixie, Ubuntu 25.04+, up-to-date KDE Neon). There is no APT repo yet — build locally:
+On **Plasma 6.5+** systems only (e.g. Arch, Tumbleweed, Fedora 42/43 with updates, current KDE Neon). Debian Trixie stock and Ubuntu ≤ 25.04 ship older Plasma and are unsupported. There is no APT repo yet — build locally:
 
 ```bash
 cd /path/to/quickbar
