@@ -6,7 +6,7 @@ QuickBar is a compiled Plasma 6 applet. These recipes install:
 /usr/lib/qt6/plugins/plasma/applets/org.quickbar.globalmenu.so
 ```
 
-**Requires Plasma 6.0+** (KF6 / Qt6). It will not build against Plasma 5 (e.g. Debian 12 / Ubuntu 22.04 LTS without a newer KDE stack).
+**Requires Plasma 6.5+** (KF6 / Qt6). It will not build against older stacks (e.g. Debian 13 Trixie / Ubuntu ≤ 25.10 / Fedora ≤ 43 ship Plasma ≤ 6.4).
 
 | Distro family | Recipe | Binary package name |
 |---------------|--------|---------------------|
@@ -14,7 +14,7 @@ QuickBar is a compiled Plasma 6 applet. These recipes install:
 | Debian / Ubuntu / Mint | [`debian/`](debian/) | `quickbar` |
 | Fedora / RHEL / openSUSE | [`rpm/quickbar.spec`](rpm/quickbar.spec) | `quickbar` |
 
-Keep `pkgver` / `Version` / `changelog` in sync with `project(quickbar VERSION …)` in the root `CMakeLists.txt` and tag releases as `v1.0` on GitHub.
+Keep `pkgver` / `Version` / `changelog` in sync with `project(quickbar VERSION …)` in the root `CMakeLists.txt` and tag releases as `v1.0` on GitHub. This includes `packaging/obs/quickbar.dsc` (`Version:`) — CI checks all of them.
 
 ## Arch Linux (AUR)
 
@@ -53,15 +53,15 @@ CI runs [`.github/workflows/packaging.yml`](../.github/workflows/packaging.yml) 
 
 ## Debian / Ubuntu (apt)
 
-On **Plasma 6** systems (e.g. Debian Trixie/testing, Ubuntu 24.10+, KDE Neon):
+Prebuilt `.deb`s are published via OBS for **Debian Testing (Forky) / Unstable (Sid)** — see the root README for APT setup. To build locally on any **Plasma 6.5+** system (e.g. Debian Testing/Unstable, KDE Neon):
 
 ```bash
 cd /path/to/quickbar
 ln -sf packaging/debian debian
 sudo apt install devscripts debhelper cmake extra-cmake-modules \
   qt6-base-dev qt6-declarative-dev libplasma-dev plasma-workspace-dev \
-  libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev \
-  libkf6windowsystem-dev libkirigami-dev
+  libkf6config-dev libkf6coreaddons-dev libkf6i18n-dev libkf6itemmodels-dev \
+  libkf6windowsystem-dev libkirigami-dev libx11-dev libxtst-dev
 debuild -b -us -uc
 sudo apt install ../quickbar_*.deb
 rm debian   # remove symlink if you used one
@@ -84,9 +84,16 @@ sudo dnf install packaging/rpm/x86_64/quickbar-*.rpm
 
 For a clean build from the release tarball, place `quickbar-1.0.tar.gz` in `~/rpmbuild/SOURCES/` (or set `_sourcedir` as above) before `rpmbuild`.
 
-## openSUSE Build Service (optional)
+## openSUSE Build Service
 
-The same `quickbar.spec` can be submitted to [OBS](https://build.opensuse.org/) to build for multiple distributions from one spec. Add Fedora, openSUSE, and SLE targets that ship Plasma 6.
+One OBS package [`home:kevinbudz/quickbar`](https://build.opensuse.org/package/show/home:kevinbudz/quickbar) builds both formats — OBS picks the recipe per repo type (see [`obs/`](obs/) for the maintainer workflow):
+
+| Repo type | Recipe | OBS files |
+|-----------|--------|-----------|
+| RPM (openSUSE Tumbleweed, Fedora 44/Rawhide) | `quickbar.spec` | `quickbar.spec` + `quickbar-*.tar.gz` via `download_files` |
+| DEB (Debian Testing/Unstable) | `quickbar.dsc` | `quickbar.dsc` + `debian.*` + same tarball via `debtransform` |
+
+Requires Plasma 6.5+, so only repos shipping it are enabled. Dropped: `Fedora_43` (Plasma 6.4.5), `Debian_13` (6.3.5), `xUbuntu_*` (≤ 6.4.5). Debian builds also need `Prefer: libavcodec62` / `libavformat62` in project config to resolve the Qt6Multimedia ffmpeg choice.
 
 ## Post-install (all distros)
 

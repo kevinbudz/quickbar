@@ -56,12 +56,14 @@ jobs:
           pkgbuild_ver=$(sed -n 's/^pkgver=\(.*\)/\1/p' packaging/arch/PKGBUILD)
           deb_ver=$(sed -n '1s/^quickbar (\([0-9.]*\).*/\1/p' packaging/debian/changelog)
           rpm_ver=$(sed -n 's/^Version:[[:space:]]*\(.*\)/\1/p' packaging/rpm/quickbar.spec)
+          dsc_ver=$(sed -n 's/^Version:[[:space:]]*\([0-9.]*\).*/\1/p' packaging/obs/quickbar.dsc)
           echo "CMake: ${cmake_ver}"
           echo "metadata: ${meta_ver}"
           echo "PKGBUILD: ${pkgbuild_ver}"
           echo "debian changelog: ${deb_ver}"
           echo "rpm spec: ${rpm_ver}"
-          for ver in "${meta_ver}" "${pkgbuild_ver}" "${deb_ver}" "${rpm_ver}"; do
+          echo "obs dsc: ${dsc_ver}"
+          for ver in "${meta_ver}" "${pkgbuild_ver}" "${deb_ver}" "${rpm_ver}" "${dsc_ver}"; do
             test "${cmake_ver}" = "${ver}"
           done
 
