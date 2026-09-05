@@ -119,19 +119,45 @@ QuickBarApplet::~QuickBarApplet()
 {
     onAppletDestroyed(this);
 
-    if (m_currentMenu && m_sourceMenu && m_currentMenu != m_sourceMenu) {
-        auto menuAction = m_currentMenu->menuAction();
-        for (QAction *action : m_currentMenu->actions()) {
-            m_currentMenu->removeAction(action);
-            if (m_sourceMenu) {
-                m_sourceMenu->addAction(action);
-            }
-        }
-        if (m_sourceMenu && menuAction) {
-            menuAction->setMenu(m_sourceMenu);
+    resetMenuState();
+    // Only the FullView proxy menu is owned by the applet. A CompactView
+    // menu is borrowed from the model and must never be deleted here.
+    if (m_ownsCurrentMenu && m_currentMenu) {
+        m_currentMenu->removeEventFilter(this);
+        delete m_currentMenu.data();
+    }
+    m_currentMenu.clear();
+    m_sourceMenu.clear();
+    m_ownsCurrentMenu = false;
+}
+
+void QuickBarApplet::restoreStolenActions()
+{
+    if (!m_ownsCurrentMenu || !m_currentMenu) {
+        return;
+    }
+    QMenu *current = m_currentMenu.data();
+    QMenu *source = m_sourceMenu.data();
+    auto menuAction = current->menuAction();
+    const QList<QAction *> actions = current->actions();
+    for (QAction *action : actions) {
+        current->removeAction(action);
+        if (source) {
+            source->addAction(action);
         }
     }
-    delete m_currentMenu.data();
+    if (source && menuAction) {
+        menuAction->setMenu(source);
+    }
+}
+
+void QuickBarApplet::resetMenuState()
+{
+    if (m_currentMenu && m_currentMenu->isVisible()) {
+        m_currentMenu->hide();
+    }
+    restoreStolenActions();
+    setCurrentIndex(-1);
 }
 
 void QuickBarApplet::init()
@@ -146,6 +172,10 @@ QAbstractItemModel *QuickBarApplet::model() const
 void QuickBarApplet::setModel(QAbstractItemModel *model)
 {
     if (m_model != model) {
+        // The stolen actions (if any) belong to the old model: give them back
+        // before switching, and forget the old model-owned source menu.
+        resetMenuState();
+        m_sourceMenu.clear();
         if (m_model) {
             disconnect(m_model, nullptr, this, nullptr);
         }
@@ -169,6 +199,20 @@ int QuickBarApplet::view() const
 void QuickBarApplet::setView(int type)
 {
     if (m_viewType != type) {
+        // Switching between the single-button menu and the full menubar must
+        // not carry menu state across: the FullView proxy holds actions stolen
+        // from one submenu, while CompactView borrows a model-owned menu.
+        // Mixing the two corrupts the model and crashes plasmashell.
+        resetMenuState();
+        if (m_ownsCurrentMenu) {
+            // Keep the (now empty) reusable proxy for the next FullView use,
+            // but forget the model-owned source menu.
+            m_sourceMenu.clear();
+        } else {
+            // Borrowed model-owned menus: drop without deleting or mutating.
+            m_currentMenu.clear();
+            m_sourceMenu.clear();
+        }
         m_viewType = type;
         Q_EMIT viewChanged();
     }
@@ -292,8 +336,14 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
         };
 
         if (view() == FullView) {
-            if (!m_currentMenu) {
+            if (!m_currentMenu || !m_ownsCurrentMenu) {
+                // Fresh state or returning from CompactView, whose pointers
+                // borrow a model-owned menu: never reuse that as the proxy.
+                // Drop the borrowed refs and allocate our own reusable menu.
+                m_currentMenu.clear();
+                m_sourceMenu.clear();
                 m_currentMenu = new QMenu(qobject_cast<QWidget *>(actionMenu->parent()));
+                m_ownsCurrentMenu = true;
                 connect(m_currentMenu, &QMenu::aboutToHide, this, &QuickBarApplet::onMenuAboutToHide, Qt::UniqueConnection);
             } else if (m_sourceMenu != actionMenu) {
                 auto menuAction = m_currentMenu->menuAction();
@@ -317,8 +367,19 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
                 menuAction->setMenu(m_currentMenu);
             }
         } else {
+            // CompactView borrows the model-owned menu directly. If a FullView
+            // proxy still holds stolen actions, return them back to the model
+            // first — otherwise the source submenu is left empty and the next
+            // FullView use reads freed/corrupted state and crashes.
+            restoreStolenActions();
+            if (m_ownsCurrentMenu && m_currentMenu) {
+                m_currentMenu->removeEventFilter(this);
+                delete m_currentMenu.data();
+            }
+            m_currentMenu.clear();
             m_currentMenu = actionMenu;
             m_sourceMenu = actionMenu;
+            m_ownsCurrentMenu = false;
         }
 
         QTimer::singleShot(0, ctx, ungrabMouseHack);
@@ -344,6 +405,7 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
             if (m_currentMenu->isVisible()) {
                 m_currentMenu->move(pos);
             } else {
+                m_currentMenu->removeEventFilter(this);
                 m_currentMenu->installEventFilter(this);
                 m_currentMenu->winId(); // create window handle
                 m_currentMenu->windowHandle()->setTransientParent(ctx->window());

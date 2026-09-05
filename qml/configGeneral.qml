@@ -407,7 +407,7 @@ KCMUtils.SimpleKCM {
                         Layout.fillWidth: true
                         wrapMode: Text.WordWrap
                         opacity: 0.75
-                        text: i18n("Show at most N top-level menus. Scroll with the mouse wheel or the arrow buttons to reach the rest. Set to 0 for no limit.")
+                        text: i18n("Show at most N top-level menus. Drag, use the mouse wheel, or drag the thin scrollbar to reach the rest. Set to 0 for no limit.")
                     }
                 }
             }

@@ -6,6 +6,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import QtQml
 
 import org.kde.plasma.plasmoid
@@ -50,9 +51,11 @@ PlasmoidItem {
         return true
     }
 
-    onCompactChanged: Plasmoid.view = compact
+    // C++ ViewType: FullView = 0, CompactView = 1. Map the bool explicitly so
+    // a representation switch always carries matching menu state with it.
+    onCompactChanged: Plasmoid.view = compact ? 1 : 0
 
-    Component.onCompleted: Plasmoid.view = compact
+    Component.onCompleted: Plasmoid.view = compact ? 1 : 0
 
     Plasmoid.constraintHints: Plasmoid.CanFillArea
     preferredRepresentation: compact ? compactRepresentation : fullRepresentation
@@ -125,20 +128,28 @@ PlasmoidItem {
             noMenuPlaceholder.implicitWidth + Kirigami.Units.smallSpacing * 2
         )
 
-        // Exact width of app prefix + first N *visible* menu buttons.
-        // Uses real layout positions (button.x + width) so app-name margins,
-        // icon, spacing and per-button text widths are all accounted for.
-        // Reads of b.visible/x/width keep this binding reactive.
-        readonly property int cappedWidth: {
-            const fullWidth = Math.max(buttonGrid.implicitWidth, showEmptyPreview ? configureMinWidth : 0)
+        // Fixed prefix (app icon + name) never scrolls; only the menu buttons do.
+        // The bar is capped to prefix + first N buttons so it never overflows
+        // into neighbouring widgets. Everything stays instantiated inside the
+        // Flickable below, so hidden menus remain reachable by drag, wheel,
+        // scrollbar and keyboard/hover navigation.
+        readonly property bool isRTL: !root.vertical && Qt.application.layoutDirection === Qt.RightToLeft
+        readonly property int prefixW: prefixGrid.visible ? prefixGrid.implicitWidth : 0
+        readonly property int prefixH: prefixGrid.visible ? prefixGrid.implicitHeight : 0
+
+        // Inner width capped to the first N *visible* buttons, using the real
+        // layout edge (Nth button's x + width). Reads of b.visible/x/width keep
+        // this binding reactive.
+        readonly property int menuCapWidth: {
+            const full = buttonGrid.implicitWidth
             if (root.vertical || maxVisibleItems <= 0 || buttonRepeater.count <= 0) {
-                return fullWidth
+                return full
             }
             let seen = 0
             for (let i = 0; i < buttonRepeater.count; ++i) {
                 const b = buttonRepeater.itemAt(i)
                 if (!b) {
-                    return fullWidth // delegates not ready yet; re-evaluates via buttonGrid.implicitWidth
+                    return full // delegates not ready yet; re-evaluates via buttonGrid.implicitWidth
                 }
                 if (!b.visible) {
                     continue
@@ -147,24 +158,24 @@ PlasmoidItem {
                 if (seen === maxVisibleItems) {
                     const edge = Math.ceil(b.x + b.width)
                     if (edge <= 0) {
-                        return fullWidth
+                        return full
                     }
-                    return Math.min(fullWidth, edge)
+                    return Math.min(full, edge)
                 }
             }
-            return fullWidth // fewer visible buttons than the limit
+            return full // fewer visible buttons than the limit
         }
 
-        readonly property int cappedHeight: {
-            const fullHeight = buttonGrid.implicitHeight
+        readonly property int menuCapHeight: {
+            const full = buttonGrid.implicitHeight
             if (!root.vertical || maxVisibleItems <= 0 || buttonRepeater.count <= 0) {
-                return fullHeight
+                return full
             }
             let seen = 0
             for (let i = 0; i < buttonRepeater.count; ++i) {
                 const b = buttonRepeater.itemAt(i)
                 if (!b) {
-                    return fullHeight
+                    return full
                 }
                 if (!b.visible) {
                     continue
@@ -173,12 +184,36 @@ PlasmoidItem {
                 if (seen === maxVisibleItems) {
                     const edge = Math.ceil(b.y + b.height)
                     if (edge <= 0) {
-                        return fullHeight
+                        return full
                     }
-                    return Math.min(fullHeight, edge)
+                    return Math.min(full, edge)
                 }
             }
-            return fullHeight
+            return full
+        }
+
+        readonly property int cappedWidth: {
+            if (root.vertical) {
+                return Math.max(prefixW, Math.max(buttonGrid.implicitWidth, showEmptyPreview ? configureMinWidth : 0))
+            }
+            let w = prefixW
+            const cap = menuCapWidth
+            if (w > 0 && cap > 0) {
+                w += itemSpacing
+            }
+            return Math.max(w + cap, showEmptyPreview ? configureMinWidth : 0)
+        }
+
+        readonly property int cappedHeight: {
+            if (!root.vertical) {
+                return Math.max(prefixH, buttonGrid.implicitHeight)
+            }
+            let h = prefixH
+            const cap = menuCapHeight
+            if (h > 0 && cap > 0) {
+                h += itemSpacing
+            }
+            return h + cap
         }
 
         function ensureItemVisible(item: Item) {
@@ -266,20 +301,97 @@ PlasmoidItem {
             }
         }
 
+        // Fixed prefix: app icon + name stay put while the menus scroll.
+        // Hidden entirely (collapsing its gap) when there is nothing to show.
+        GridLayout {
+            id: prefixGrid
+            x: root.vertical ? Math.max(0, (parent.width - width) / 2) : (isRTL ? parent.width - width : 0)
+            y: root.vertical ? 0 : Math.max(0, (buttonGrid.implicitHeight - height) / 2)
+            width: implicitWidth
+            height: implicitHeight
+            visible: fullAppIcon.visible || appNameLabel.visible
+            flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+            rowSpacing: root.vertical ? itemSpacing : 0
+            columnSpacing: root.vertical ? 0 : itemSpacing
+
+            Kirigami.Icon {
+                id: fullAppIcon
+                visible: root.showApplicationName && root.showApplicationIcon
+                    && appMenuModel.applicationIcon !== undefined
+                    && appMenuModel.applicationIcon !== null
+                    && appMenuModel.applicationIcon !== ""
+                    && appMenuModel.applicationName.length > 0
+                    && (root.barVisible || root.inPanelConfigure)
+                source: appMenuModel.applicationIcon
+                Layout.alignment: Qt.AlignVCenter
+                implicitWidth: Kirigami.Units.iconSizes.small
+                implicitHeight: Kirigami.Units.iconSizes.small
+                Layout.leftMargin: root.vertical ? 0 : root.appNameMarginBefore
+                Layout.topMargin: root.vertical ? root.appNameMarginBefore : 0
+            }
+
+            AppNameLabel {
+                id: appNameLabel
+                visible: root.showApplicationName && appMenuModel.applicationName.length > 0
+                    && (root.barVisible || root.inPanelConfigure)
+                text: appMenuModel.applicationName
+                fontSize: Plasmoid.configuration.appNameFontSize
+                fontFamily: Plasmoid.configuration.appNameFontFamily
+                fontWeight: Plasmoid.configuration.appNameFontWeight
+                Layout.alignment: Qt.AlignVCenter
+                Layout.leftMargin: root.vertical ? 0 : (fullAppIcon.visible ? Kirigami.Units.smallSpacing : root.appNameMarginBefore)
+                Layout.rightMargin: root.vertical ? 0 : root.appNameMarginAfter
+                Layout.topMargin: root.vertical ? (fullAppIcon.visible ? Kirigami.Units.smallSpacing : root.appNameMarginBefore) : 0
+                Layout.bottomMargin: root.vertical ? root.appNameMarginAfter : 0
+            }
+        }
+
         Flickable {
             id: menuScroller
-            anchors.fill: parent
+            x: root.vertical ? 0 : (isRTL ? 0 : (prefixGrid.visible ? prefixGrid.width + itemSpacing : 0))
+            y: root.vertical ? (prefixGrid.visible ? prefixGrid.height + itemSpacing : 0) : 0
+            width: root.vertical ? parent.width : Math.max(0, parent.width - x)
+            height: root.vertical ? Math.max(0, parent.height - y) : parent.height
             clip: true
             contentWidth: buttonGrid.implicitWidth
             contentHeight: buttonGrid.implicitHeight
             interactive: contentWidth > width || contentHeight > height
             flickableDirection: root.vertical ? Flickable.VerticalFlick : Flickable.HorizontalFlick
             boundsBehavior: Flickable.StopAtBounds
-            // Note: mouse-drag flicking is intentionally not the primary scroll
-            // path — MenuDelegate buttons accept the press immediately (onPressed
-            // opens the menu), so a drag rarely reaches the Flickable. Scrolling
-            // is via mouse wheel / touchpad (see WheelHandler) and the overlay
-            // arrow buttons below, plus auto-scroll in ensureItemVisible().
+            // Menu buttons grab presses immediately, so without a press delay a
+            // drag would never reach the Flickable. The delay lets drags become
+            // smooth scrolls while plain clicks still open menus (just deferred
+            // by the delay, as in stock scrollable Plasma widgets).
+            pressDelay: 100
+
+            // Thin overlay scrollbars instead of pager buttons: a few px thick,
+            // visible only while the content overflows. Fully draggable.
+            ScrollBar.horizontal: ScrollBar {
+                policy: ScrollBar.AsNeeded
+                padding: 0
+                implicitHeight: 2
+                contentItem: Rectangle {
+                    radius: 1
+                    color: Kirigami.Theme.highlightColor
+                    opacity: parent.active ? 0.9 : 0.5
+                }
+                background: Item {
+                    implicitHeight: 2
+                }
+            }
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+                padding: 0
+                implicitWidth: 2
+                contentItem: Rectangle {
+                    radius: 1
+                    color: Kirigami.Theme.highlightColor
+                    opacity: parent.active ? 0.9 : 0.5
+                }
+                background: Item {
+                    implicitWidth: 2
+                }
+            }
 
             onContentWidthChanged: {
                 if (contentX > 0 && contentWidth > width && contentX + width > contentWidth) {
@@ -296,7 +408,9 @@ PlasmoidItem {
                 }
             }
 
-            // Let a vertical wheel scroll a horizontal bar.
+            // A horizontal Flickable ignores the vertical wheel most mice send,
+            // so translate it here. True horizontal gestures pass through to
+            // the Flickable's native handling untouched.
             WheelHandler {
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 onWheel: (event) => {
@@ -331,37 +445,6 @@ PlasmoidItem {
                 flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
                 rowSpacing: root.vertical ? itemSpacing : 0
                 columnSpacing: root.vertical ? 0 : itemSpacing
-
-                Kirigami.Icon {
-                    id: fullAppIcon
-                    visible: root.showApplicationName && root.showApplicationIcon
-                        && appMenuModel.applicationIcon !== undefined
-                        && appMenuModel.applicationIcon !== null
-                        && appMenuModel.applicationIcon !== ""
-                        && appMenuModel.applicationName.length > 0
-                        && (root.barVisible || root.inPanelConfigure)
-                    source: appMenuModel.applicationIcon
-                    Layout.alignment: Qt.AlignVCenter
-                    implicitWidth: Kirigami.Units.iconSizes.small
-                    implicitHeight: Kirigami.Units.iconSizes.small
-                    Layout.leftMargin: root.vertical ? 0 : root.appNameMarginBefore
-                    Layout.topMargin: root.vertical ? root.appNameMarginBefore : 0
-                }
-
-                AppNameLabel {
-                    id: appNameLabel
-                    visible: root.showApplicationName && appMenuModel.applicationName.length > 0
-                        && (root.barVisible || root.inPanelConfigure)
-                    text: appMenuModel.applicationName
-                    fontSize: Plasmoid.configuration.appNameFontSize
-                    fontFamily: Plasmoid.configuration.appNameFontFamily
-                    fontWeight: Plasmoid.configuration.appNameFontWeight
-                    Layout.alignment: Qt.AlignVCenter
-                    Layout.leftMargin: root.vertical ? 0 : (fullAppIcon.visible ? Kirigami.Units.smallSpacing : root.appNameMarginBefore)
-                    Layout.rightMargin: root.vertical ? 0 : root.appNameMarginAfter
-                    Layout.topMargin: root.vertical ? (fullAppIcon.visible ? Kirigami.Units.smallSpacing : root.appNameMarginBefore) : 0
-                    Layout.bottomMargin: root.vertical ? root.appNameMarginAfter : 0
-                }
 
                 PlasmaComponents3.ToolButton {
                     id: noMenuPlaceholder
@@ -424,77 +507,6 @@ PlasmoidItem {
             }
         }
 
-        // Overlay scroll arrows. They only appear when content overflows the
-        // viewport AND there is more content in that direction. Drag-to-scroll
-        // is unreliable here (menu buttons grab the press), so these + wheel
-        // are the discoverable scroll paths.
-        PlasmaComponents3.ToolButton {
-            id: scrollPrevButton
-            z: 10
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            visible: !root.vertical && menuScroller.contentWidth > menuScroller.width + 1 && menuScroller.contentX > 1
-            icon.name: Qt.application.layoutDirection === Qt.RightToLeft ? "arrow-right" : "arrow-left"
-            display: PlasmaComponents3.AbstractButton.IconOnly
-            implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
-            implicitHeight: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
-            Accessible.name: i18nc("@action:button", "Scroll menus backward")
-            onClicked: {
-                const step = Math.max(menuScroller.width * 0.8, Kirigami.Units.gridUnit * 4)
-                menuScroller.contentX = Math.max(0, menuScroller.contentX - step)
-            }
-        }
-
-        PlasmaComponents3.ToolButton {
-            id: scrollNextButton
-            z: 10
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            visible: !root.vertical && menuScroller.contentWidth > menuScroller.width + 1 && (menuScroller.contentX + menuScroller.width < menuScroller.contentWidth - 1)
-            icon.name: Qt.application.layoutDirection === Qt.RightToLeft ? "arrow-left" : "arrow-right"
-            display: PlasmaComponents3.AbstractButton.IconOnly
-            implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
-            implicitHeight: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
-            Accessible.name: i18nc("@action:button", "Scroll menus forward")
-            onClicked: {
-                const step = Math.max(menuScroller.width * 0.8, Kirigami.Units.gridUnit * 4)
-                menuScroller.contentX = Math.max(0, Math.min(menuScroller.contentX + step, menuScroller.contentWidth - menuScroller.width))
-            }
-        }
-
-        PlasmaComponents3.ToolButton {
-            id: scrollUpButton
-            z: 10
-            anchors.top: parent.top
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.vertical && menuScroller.contentHeight > menuScroller.height + 1 && menuScroller.contentY > 1
-            icon.name: "arrow-up"
-            display: PlasmaComponents3.AbstractButton.IconOnly
-            implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
-            implicitHeight: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
-            Accessible.name: i18nc("@action:button", "Scroll menus up")
-            onClicked: {
-                const step = Math.max(menuScroller.height * 0.8, Kirigami.Units.gridUnit * 4)
-                menuScroller.contentY = Math.max(0, menuScroller.contentY - step)
-            }
-        }
-
-        PlasmaComponents3.ToolButton {
-            id: scrollDownButton
-            z: 10
-            anchors.bottom: parent.bottom
-            anchors.horizontalCenter: parent.horizontalCenter
-            visible: root.vertical && menuScroller.contentHeight > menuScroller.height + 1 && (menuScroller.contentY + menuScroller.height < menuScroller.contentHeight - 1)
-            icon.name: "arrow-down"
-            display: PlasmaComponents3.AbstractButton.IconOnly
-            implicitWidth: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
-            implicitHeight: Kirigami.Units.iconSizes.small + Kirigami.Units.smallSpacing * 2
-            Accessible.name: i18nc("@action:button", "Scroll menus down")
-            onClicked: {
-                const step = Math.max(menuScroller.height * 0.8, Kirigami.Units.gridUnit * 4)
-                menuScroller.contentY = Math.max(0, Math.min(menuScroller.contentY + step, menuScroller.contentHeight - menuScroller.height))
-            }
-        }
     }
 
     AppMenuModel {
