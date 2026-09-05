@@ -1,0 +1,1 @@
+packaging/rpm/quickbar.spec
