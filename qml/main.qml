@@ -115,32 +115,131 @@ PlasmoidItem {
         }
     }
 
-    fullRepresentation: GridLayout {
-        id: buttonGrid
+    fullRepresentation: Item {
+        id: fullRoot
+        implicitWidth: menuScroller.implicitWidth
+        implicitHeight: menuScroller.implicitHeight
+
+        readonly property bool showEmptyPreview: inPanelConfigure && buttonRepeater.count === 0
+        readonly property bool effectiveVisible: root.barVisible
+        readonly property int configureMinWidth: Math.max(
+            Kirigami.Units.gridUnit * 6,
+            noMenuPlaceholder.implicitWidth + Kirigami.Units.smallSpacing * 2
+        )
 
         Plasmoid.status: {
-            if (!root.barVisible) {
+            if (!effectiveVisible) {
                 return PlasmaCore.Types.HiddenStatus
             }
             if (appMenuModel.menuAvailable && Plasmoid.currentIndex > -1 && buttonRepeater.count > 0) {
                 return PlasmaCore.Types.NeedsAttentionStatus
             }
-            if (buttonRepeater.count > 0 || Plasmoid.configuration.compactView
-                    || (root.showApplicationName && appMenuModel.applicationName.length > 0)) {
+            if (buttonRepeater.count > 0 || showEmptyPreview
+                    || (showApplicationName && appMenuModel.applicationName.length > 0)) {
                 return PlasmaCore.Types.ActiveStatus
             }
-            return PlasmaCore.Types.HiddenStatus
+            return PlasmaCore.Types.PassiveStatus
         }
 
-        LayoutMirroring.enabled: Application.layoutDirection === Qt.RightToLeft
-        Layout.minimumWidth: implicitWidth
+        Layout.minimumWidth: fillWidth ? -1 : Math.max(implicitWidth, showEmptyPreview ? configureMinWidth : 0)
         Layout.minimumHeight: implicitHeight
-        Layout.fillWidth: Plasmoid.configuration.fillWidth
+        Layout.fillWidth: fillWidth
         Layout.fillHeight: true
+        Layout.preferredWidth: fillWidth ? -1 : Math.max(implicitWidth, showEmptyPreview ? configureMinWidth : 0)
 
-        flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
-        rowSpacing: root.vertical ? Plasmoid.configuration.itemSpacing : 0
-        columnSpacing: root.vertical ? 0 : Plasmoid.configuration.itemSpacing
+        Flickable {
+            id: menuScroller
+            anchors.fill: parent
+            clip: true
+            contentWidth: buttonGrid.implicitWidth
+            contentHeight: buttonGrid.implicitHeight
+            interactive: contentWidth > width || contentHeight > height
+            flickableDirection: root.vertical ? Flickable.VerticalFlick : Flickable.HorizontalFlick
+            // Cap the viewport when maxVisibleItems is set so the applet does not
+            // overflow into neighbouring widgets. All buttons stay instantiated -
+            // the excess is reachable by scrolling.
+            implicitWidth: {
+                const fullWidth = Math.max(buttonGrid.implicitWidth, showEmptyPreview ? configureMinWidth : 0)
+                if (root.vertical || maxVisibleItems <= 0) {
+                    return fullWidth
+                }
+                const cap = buttonGrid.maxItemWidth * maxVisibleItems + Kirigami.Units.smallSpacing * 2
+                return Math.min(fullWidth, cap)
+            }
+            implicitHeight: {
+                const fullHeight = buttonGrid.implicitHeight
+                if (!root.vertical || maxVisibleItems <= 0) {
+                    return fullHeight
+                }
+                const cap = buttonGrid.maxItemHeight * maxVisibleItems + Kirigami.Units.smallSpacing * 2
+                return Math.min(fullHeight, cap)
+            }
+
+            // Let a vertical wheel scroll a horizontal bar.
+            WheelHandler {
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                onWheel: {
+                    if (root.vertical) {
+                        return
+                    }
+                    if (menuScroller.contentWidth <= menuScroller.width) {
+                        return
+                    }
+                    let delta = 0
+                    if (event.pixelDelta.x !== 0 || event.pixelDelta.y !== 0) {
+                        delta = event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.pixelDelta.y
+                    } else {
+                        delta = event.angleDelta.x !== 0 ? event.angleDelta.x : event.angleDelta.y
+                    }
+                    if (delta !== 0) {
+                        menuScroller.contentX = Math.max(0, Math.min(menuScroller.contentX - delta, menuScroller.contentWidth - menuScroller.width))
+                        event.accepted = true
+                    }
+                }
+            }
+
+            GridLayout {
+                id: buttonGrid
+                width: implicitWidth
+                height: implicitHeight
+
+                readonly property int maxItemWidth: {
+                    let w = Kirigami.Units.gridUnit * 4
+                    if (appNameLabel.visible) {
+                        w = Math.max(w, appNameLabel.implicitWidth)
+                    }
+                    if (fullAppIcon.visible) {
+                        w = Math.max(w, fullAppIcon.implicitWidth)
+                    }
+                    for (let i = 0; i < buttonRepeater.count; ++i) {
+                        const item = buttonRepeater.itemAt(i)
+                        if (item) {
+                            w = Math.max(w, item.implicitWidth)
+                        }
+                    }
+                    return w
+                }
+                readonly property int maxItemHeight: {
+                    let h = Kirigami.Units.gridUnit * 2
+                    if (appNameLabel.visible) {
+                        h = Math.max(h, appNameLabel.implicitHeight)
+                    }
+                    if (noMenuPlaceholder.visible) {
+                        h = Math.max(h, noMenuPlaceholder.implicitHeight)
+                    }
+                    for (let i = 0; i < buttonRepeater.count; ++i) {
+                        const item = buttonRepeater.itemAt(i)
+                        if (item) {
+                            h = Math.max(h, item.implicitHeight)
+                        }
+                    }
+                    return h
+                }
+
+                LayoutMirroring.enabled: Qt.application.layoutDirection === Qt.RightToLeft
+                flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
+                rowSpacing: root.vertical ? itemSpacing : 0
+                columnSpacing: root.vertical ? 0 : itemSpacing
 
         Binding {
             target: Plasmoid
@@ -155,6 +254,21 @@ PlasmoidItem {
                 const button = buttonRepeater.itemAt(index) as MenuDelegate
                 if (button) {
                     button.activated()
+                    if (maxVisibleItems > 0) {
+                        if (!root.vertical) {
+                            if (button.x < menuScroller.contentX) {
+                                menuScroller.contentX = button.x
+                            } else if (button.x + button.width > menuScroller.contentX + menuScroller.width) {
+                                menuScroller.contentX = button.x + button.width - menuScroller.width
+                            }
+                        } else {
+                            if (button.y < menuScroller.contentY) {
+                                menuScroller.contentY = button.y
+                            } else if (button.y + button.height > menuScroller.contentY + menuScroller.height) {
+                                menuScroller.contentY = button.y + button.height - menuScroller.height
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -202,15 +316,19 @@ PlasmoidItem {
 
         PlasmaComponents3.ToolButton {
             id: noMenuPlaceholder
-            visible: buttonRepeater.count === 0 && (root.inPanelConfigure || (!root.showApplicationName && !root.hideWhenEmpty))
+            visible: showEmptyPreview
+            enabled: false
             text: Plasmoid.title
+            display: PlasmaComponents3.AbstractButton.TextOnly
+            Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: root.vertical
             Layout.fillHeight: !root.vertical
+            Layout.preferredWidth: inPanelConfigure ? configureMinWidth : implicitWidth
         }
 
         Repeater {
             id: buttonRepeater
-            model: appMenuModel.visible ? appMenuModel : null
+            model: appMenuModel.menuAvailable ? appMenuModel : null
 
             MenuDelegate {
                 required property int index
@@ -218,14 +336,14 @@ PlasmoidItem {
                 required property PlasmaCore.Action activeActions
                 readonly property int buttonIndex: index
 
+                Layout.alignment: Qt.AlignVCenter
                 Layout.fillWidth: root.vertical
                 Layout.fillHeight: !root.vertical
                 text: activeMenu
                 Kirigami.MnemonicData.active: altState.pressed
 
                 down: Plasmoid.currentIndex === index
-                visible: (Plasmoid.configuration.maxVisibleItems <= 0 || index < Plasmoid.configuration.maxVisibleItems)
-                    && text !== "" && (activeActions?.visible ?? false)
+                visible: text !== "" && (activeActions?.visible ?? false)
 
                 menuIsOpen: Plasmoid.currentIndex !== -1
                 hoverOpensMenu: Plasmoid.configuration.hoverOpensMenu
@@ -246,10 +364,12 @@ PlasmoidItem {
         }
 
         Item {
-            Layout.preferredWidth: 0
-            Layout.preferredHeight: 0
-            Layout.fillWidth: Plasmoid.configuration.fillWidth
+            Layout.fillWidth: fillWidth
             Layout.fillHeight: true
+            Layout.preferredWidth: fillWidth ? 0 : 0
+            Layout.preferredHeight: 0
+        }
+            }
         }
     }
 
