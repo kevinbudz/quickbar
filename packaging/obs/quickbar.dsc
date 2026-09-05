@@ -2,7 +2,7 @@ Format: 3.0 (quilt)
 Source: quickbar
 Version: 1.0-1
 Binary: quickbar
-Maintainer: Kevin Budz <https://github.com/kevinbudz>
+Maintainer: Kevin Budz <kevin.budz052@gmail.com>
 Architecture: any
 Standards-Version: 4.7.0
 Build-Depends: debhelper-compat (= 13),

@@ -1,7 +1,7 @@
 Source: quickbar
 Section: kde
 Priority: optional
-Maintainer: Kevin Budz <https://github.com/kevinbudz>
+Maintainer: Kevin Budz <kevin.budz052@gmail.com>
 Build-Depends: debhelper-compat (= 13),
                cmake,
                extra-cmake-modules,

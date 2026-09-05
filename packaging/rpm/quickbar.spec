@@ -73,11 +73,11 @@ the stock Global Menu widget. Do not run both at once.
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_org.quickbar.globalmenu.mo
 
 %changelog
-* Sat Sep 05 2026 Kevin Budz <https://github.com/kevinbudz> - 1.0-1
+* Sat Sep 05 2026 Kevin Budz <kevin.budz052@gmail.com> - 1.0-1
 - Release 1.0
 
-* Fri May 22 2026 Kevin Budz <https://github.com/kevinbudz> - 0.2.1-1
+* Fri May 22 2026 Kevin Budz <kevin.budz052@gmail.com> - 0.2.1-1
 - Release 0.2.1
 
-* Thu May 21 2026 Kevin Budz <https://github.com/kevinbudz> - 0.1.0-1
+* Thu May 21 2026 Kevin Budz <kevin.budz052@gmail.com> - 0.1.0-1
 - Initial package
