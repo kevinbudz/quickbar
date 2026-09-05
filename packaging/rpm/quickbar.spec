@@ -10,6 +10,18 @@ Source0:        https://github.com/kevinbudz/quickbar/archive/v%{version}/quickb
 BuildRequires:  cmake
 BuildRequires:  extra-cmake-modules
 BuildRequires:  gcc-c++
+%if 0%{?suse_version}
+BuildRequires:  qt6-base-devel
+BuildRequires:  qt6-declarative-devel
+BuildRequires:  libplasma6-devel
+BuildRequires:  plasma6-workspace-devel
+BuildRequires:  kf6-kconfig-devel
+BuildRequires:  kf6-kcoreaddons-devel
+BuildRequires:  kf6-ki18n-devel
+BuildRequires:  kf6-kitemmodels-devel
+BuildRequires:  kf6-kwindowsystem-devel
+BuildRequires:  kf6-kirigami-devel
+%else
 BuildRequires:  qt6-qtbase-devel
 BuildRequires:  qt6-qtdeclarative-devel
 BuildRequires:  libplasma-devel
@@ -20,11 +32,17 @@ BuildRequires:  kf6-ki18n-devel
 BuildRequires:  kf6-kitemmodels-devel
 BuildRequires:  kf6-kwindowsystem-devel
 BuildRequires:  kf6-kirigami-devel
+%endif
 BuildRequires:  libX11-devel
 BuildRequires:  libXtst-devel
 
+%if 0%{?suse_version}
+Requires:       libplasma6%{?_isa}
+Requires:       plasma6-workspace%{?_isa}
+%else
 Requires:       libplasma%{?_isa}
 Requires:       plasma-workspace%{?_isa}
+%endif
 Requires:       qt6-qtbase%{?_isa}
 Requires:       qt6-qtdeclarative%{?_isa}
 Requires:       kf6-kconfig%{?_isa}
@@ -50,6 +68,7 @@ the stock Global Menu widget. Do not run both at once.
 
 %files
 %{_libdir}/qt6/plugins/plasma/applets/org.quickbar.globalmenu.so
+%{_datadir}/locale/*/LC_MESSAGES/plasma_applet_org.quickbar.globalmenu.mo
 
 %changelog
 * Sat Sep 05 2026 Kevin Budz <https://github.com/kevinbudz> - 1.0-1
