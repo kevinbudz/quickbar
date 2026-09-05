@@ -30,6 +30,7 @@ KCMUtils.SimpleKCM {
     readonly property string cfg_textColorDefault: ""
     readonly property string cfg_hoverTextColorDefault: ""
     readonly property int cfg_maxVisibleItemsDefault: 0
+    readonly property bool cfg_centerButtonsWhenFittedDefault: false
     readonly property bool cfg_filterByActiveDefault: false
     readonly property bool cfg_stickyMenuBarDefault: true
     readonly property bool cfg_showDesktopMenuDefault: true
@@ -59,6 +60,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_textColor: textColorField.text
     property alias cfg_hoverTextColor: hoverTextColorField.text
     property alias cfg_maxVisibleItems: maxVisibleItemsSpin.value
+    property alias cfg_centerButtonsWhenFitted: centerButtonsCheck.checked
     property alias cfg_appNameFontSize: appNameFontSettings.pointSize
     property alias cfg_appNameFontFamily: appNameFontSettings.family
     property alias cfg_appNameFontWeight: appNameFontSettings.weight
@@ -400,6 +402,12 @@ KCMUtils.SimpleKCM {
                         Kirigami.FormData.label: i18n("Max visible items:")
                         from: 0
                         to: 50
+                    }
+
+                    QQC2.CheckBox {
+                        id: centerButtonsCheck
+                        Kirigami.FormData.label: " "
+                        text: i18n("Center buttons vertically when everything fits")
                     }
                 }
 

@@ -30,6 +30,7 @@ PlasmoidItem {
     readonly property bool stickyMenuBar: Plasmoid.configuration.stickyMenuBar
     readonly property bool showDesktopMenu: Plasmoid.configuration.showDesktopMenu
     readonly property int maxVisibleItems: Plasmoid.configuration.maxVisibleItems
+    readonly property bool centerButtonsWhenFitted: Plasmoid.configuration.centerButtonsWhenFitted
     readonly property int itemSpacing: Plasmoid.configuration.itemSpacing
     readonly property bool inPanelConfigure: Plasmoid.userConfiguring
         || (Plasmoid.containment?.corona?.editMode ?? false)
@@ -137,20 +138,46 @@ PlasmoidItem {
         readonly property int prefixW: prefixGrid.visible ? prefixGrid.implicitWidth : 0
         readonly property int prefixH: prefixGrid.visible ? prefixGrid.implicitHeight : 0
 
-        // Generation counter bumped (with a post-layout retry) whenever the
-        // Repeater recreates delegates. Pure bindings that read itemAt() lose
-        // their dependencies when old delegates are destroyed: if a modelReset
-        // is evaluated while itemAt() is null it returns the full width and,
-        // with identical widths, never re-evaluates — leaving the bar fully
-        // expanded until refocus recreates the importer. Depending on
-        // _capRefresh forces a re-measure once the new delegates are laid out.
+        // Generation counter bumped whenever the Repeater recreates delegates.
+        // Pure bindings that read itemAt() lose their dependencies when old
+        // delegates are destroyed: if a modelReset is evaluated while itemAt()
+        // is null it returns the full width and, with identical widths, never
+        // re-evaluates — leaving the bar fully expanded (which also hides the
+        // scrollbar, since nothing overflows) until refocus rebuilds the model.
+        // Depending on _capRefresh forces re-measures; the poller below keeps
+        // bumping until every delegate exists, since DBus menus can rebuild in
+        // stages across several event-loop ticks and a single deferred bump can
+        // still observe nulls.
         property int _capRefresh: 0
+        property int _capRetries: 0
 
         function scheduleCapRefresh() {
-            Qt.callLater(() => {
-                _capRefresh++
-                Qt.callLater(() => _capRefresh++)
-            })
+            _capRetries = 8
+            _capPoller.restart()
+        }
+
+        function _capsSettled() {
+            if (buttonRepeater.count <= 0) {
+                return true
+            }
+            for (let i = 0; i < buttonRepeater.count; ++i) {
+                if (!buttonRepeater.itemAt(i)) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        Timer {
+            id: _capPoller
+            interval: 50
+            repeat: true
+            onTriggered: {
+                fullRoot._capRefresh++
+                if (fullRoot._capsSettled() || --fullRoot._capRetries <= 0) {
+                    stop()
+                }
+            }
         }
 
         // Number of currently visible menu buttons. hasOverflow gates the
@@ -347,7 +374,9 @@ PlasmoidItem {
         GridLayout {
             id: prefixGrid
             x: root.vertical ? Math.max(0, (parent.width - width) / 2) : (isRTL ? parent.width - width : 0)
-            y: root.vertical ? 0 : Math.max(0, (buttonGrid.implicitHeight - height) / 2)
+            // Always center the app name in the bar itself, so its position
+            // never depends on button height or scrollbar state.
+            y: root.vertical ? 0 : Math.max(0, (parent.height - height) / 2)
             width: implicitWidth
             height: implicitHeight
             visible: fullAppIcon.visible || appNameLabel.visible
@@ -481,6 +510,12 @@ PlasmoidItem {
                 id: buttonGrid
                 width: implicitWidth
                 height: implicitHeight
+                // Center the buttons in the viewport when everything fits, so a
+                // taller app-name prefix can't leave them riding high. Keep them
+                // top-aligned while scrolling (overflow), as before.
+                // Gated behind the "Center buttons vertically when everything
+                // fits" setting (default off).
+                y: (!root.vertical && !fullRoot.hasOverflow && centerButtonsWhenFitted) ? Math.max(0, (menuScroller.height - implicitHeight) / 2) : 0
 
                 LayoutMirroring.enabled: Qt.application.layoutDirection === Qt.RightToLeft
                 flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
