@@ -30,7 +30,7 @@ PlasmoidItem {
     readonly property bool stickyMenuBar: Plasmoid.configuration.stickyMenuBar
     readonly property bool showDesktopMenu: Plasmoid.configuration.showDesktopMenu
     readonly property int maxVisibleItems: Plasmoid.configuration.maxVisibleItems
-    readonly property bool centerButtonsWhenFitted: Plasmoid.configuration.centerButtonsWhenFitted
+    readonly property bool centerButtonsWhenScrolling: Plasmoid.configuration.centerButtonsWhenScrolling
     readonly property int itemSpacing: Plasmoid.configuration.itemSpacing
     readonly property bool inPanelConfigure: Plasmoid.userConfiguring
         || (Plasmoid.containment?.corona?.editMode ?? false)
@@ -511,11 +511,10 @@ PlasmoidItem {
                 width: implicitWidth
                 height: implicitHeight
                 // Center the buttons in the viewport when everything fits, so a
-                // taller app-name prefix can't leave them riding high. Keep them
-                // top-aligned while scrolling (overflow), as before.
-                // Gated behind the "Center buttons vertically when everything
-                // fits" setting (default off).
-                y: (!root.vertical && !fullRoot.hasOverflow && centerButtonsWhenFitted) ? Math.max(0, (menuScroller.height - implicitHeight) / 2) : 0
+                // taller app-name prefix can't leave them riding high. While
+                // scrolling (overflow) they stay top-aligned unless the "Center
+                // buttons vertically even when scrolling" setting is on.
+                y: (!root.vertical && (!fullRoot.hasOverflow || centerButtonsWhenScrolling)) ? Math.max(0, (menuScroller.height - implicitHeight) / 2) : 0
 
                 LayoutMirroring.enabled: Qt.application.layoutDirection === Qt.RightToLeft
                 flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight

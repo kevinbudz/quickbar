@@ -85,9 +85,9 @@
       <label>Maximum visible menu buttons before scrolling (0 = unlimited)</label>
       <default>0</default>
     </entry>
-    <entry name="centerButtonsWhenFitted" type="Bool">
-      <label>Vertically center menu buttons when everything fits without scrolling</label>
-      <default>false</default>
+    <entry name="centerButtonsWhenScrolling" type="Bool">
+      <label>Vertically center menu buttons even when scrolling</label>
+      <default>true</default>
     </entry>
   </group>
 
