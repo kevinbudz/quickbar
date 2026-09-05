@@ -137,10 +137,49 @@ PlasmoidItem {
         readonly property int prefixW: prefixGrid.visible ? prefixGrid.implicitWidth : 0
         readonly property int prefixH: prefixGrid.visible ? prefixGrid.implicitHeight : 0
 
+        // Generation counter bumped (with a post-layout retry) whenever the
+        // Repeater recreates delegates. Pure bindings that read itemAt() lose
+        // their dependencies when old delegates are destroyed: if a modelReset
+        // is evaluated while itemAt() is null it returns the full width and,
+        // with identical widths, never re-evaluates — leaving the bar fully
+        // expanded until refocus recreates the importer. Depending on
+        // _capRefresh forces a re-measure once the new delegates are laid out.
+        property int _capRefresh: 0
+
+        function scheduleCapRefresh() {
+            Qt.callLater(() => {
+                _capRefresh++
+                Qt.callLater(() => _capRefresh++)
+            })
+        }
+
+        // Number of currently visible menu buttons. hasOverflow gates the
+        // Flickable so a trailing layout gap (or 1px rounding) when count ==
+        // max never enables scrolling or draws a scrollbar.
+        readonly property int visibleButtonCount: {
+            _capRefresh
+            if (buttonRepeater.count <= 0) {
+                return 0
+            }
+            let c = 0
+            for (let i = 0; i < buttonRepeater.count; ++i) {
+                const b = buttonRepeater.itemAt(i)
+                if (!b) {
+                    continue
+                }
+                if (b.visible) {
+                    c += 1
+                }
+            }
+            return c
+        }
+        readonly property bool hasOverflow: maxVisibleItems > 0 && visibleButtonCount > maxVisibleItems
+
         // Inner width capped to the first N *visible* buttons, using the real
         // layout edge (Nth button's x + width). Reads of b.visible/x/width keep
         // this binding reactive.
         readonly property int menuCapWidth: {
+            _capRefresh
             const full = buttonGrid.implicitWidth
             if (root.vertical || maxVisibleItems <= 0 || buttonRepeater.count <= 0) {
                 return full
@@ -149,7 +188,7 @@ PlasmoidItem {
             for (let i = 0; i < buttonRepeater.count; ++i) {
                 const b = buttonRepeater.itemAt(i)
                 if (!b) {
-                    return full // delegates not ready yet; re-evaluates via buttonGrid.implicitWidth
+                    return full // delegates not ready yet; re-measured via _capRefresh
                 }
                 if (!b.visible) {
                     continue
@@ -167,6 +206,7 @@ PlasmoidItem {
         }
 
         readonly property int menuCapHeight: {
+            _capRefresh
             const full = buttonGrid.implicitHeight
             if (!root.vertical || maxVisibleItems <= 0 || buttonRepeater.count <= 0) {
                 return full
@@ -272,6 +312,7 @@ PlasmoidItem {
             function onModelReset() {
                 menuScroller.contentX = 0
                 menuScroller.contentY = 0
+                fullRoot.scheduleCapRefresh()
             }
             function onApplicationNameChanged() {
                 menuScroller.contentX = 0
@@ -355,7 +396,7 @@ PlasmoidItem {
             clip: true
             contentWidth: buttonGrid.implicitWidth
             contentHeight: buttonGrid.implicitHeight
-            interactive: contentWidth > width || contentHeight > height
+            interactive: fullRoot.hasOverflow && (contentWidth > width || contentHeight > height)
             flickableDirection: root.vertical ? Flickable.VerticalFlick : Flickable.HorizontalFlick
             boundsBehavior: Flickable.StopAtBounds
             // Menu buttons grab presses immediately, so without a press delay a
@@ -367,7 +408,7 @@ PlasmoidItem {
             // Thin overlay scrollbars instead of pager buttons: a few px thick,
             // visible only while the content overflows. Fully draggable.
             ScrollBar.horizontal: ScrollBar {
-                policy: ScrollBar.AsNeeded
+                policy: fullRoot.hasOverflow ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
                 padding: 0
                 implicitHeight: 2
                 contentItem: Rectangle {
@@ -380,7 +421,7 @@ PlasmoidItem {
                 }
             }
             ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
+                policy: fullRoot.hasOverflow ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
                 padding: 0
                 implicitWidth: 2
                 contentItem: Rectangle {
@@ -414,7 +455,7 @@ PlasmoidItem {
             WheelHandler {
                 acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 onWheel: (event) => {
-                    if (root.vertical) {
+                    if (root.vertical || !fullRoot.hasOverflow) {
                         return
                     }
                     if (menuScroller.contentWidth <= menuScroller.width) {
@@ -461,6 +502,8 @@ PlasmoidItem {
                 Repeater {
                     id: buttonRepeater
                     model: appMenuModel.menuAvailable ? appMenuModel : null
+                    onItemAdded: fullRoot.scheduleCapRefresh()
+                    onItemRemoved: fullRoot.scheduleCapRefresh()
 
                     MenuDelegate {
                         required property int index
@@ -498,7 +541,13 @@ PlasmoidItem {
                     }
                 }
 
+                // Spacer for fillWidth mode only. When visible in a capped bar
+                // it still occupies a grid cell, adding one extra itemSpacing
+                // to implicitWidth so contentWidth exceeds the cap by exactly
+                // that gap — drawing a scrollbar that scrolls a negligible
+                // distance when count == max. Hidden unless filling.
                 Item {
+                    visible: root.fillWidth
                     Layout.fillWidth: fillWidth
                     Layout.fillHeight: true
                     Layout.preferredWidth: fillWidth ? 0 : 0

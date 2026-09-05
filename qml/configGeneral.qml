@@ -380,6 +380,7 @@ KCMUtils.SimpleKCM {
 
                 Kirigami.FormLayout {
                     Layout.fillWidth: true
+                    rowSpacing: Kirigami.Units.smallSpacing
 
                     QQC2.SpinBox {
                         id: itemSpacingSpin
