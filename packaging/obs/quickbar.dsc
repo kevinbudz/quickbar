@@ -1,6 +1,6 @@
 Format: 3.0 (quilt)
 Source: quickbar
-Version: 1.1-1
+Version: 1.11-1
 Binary: quickbar
 Maintainer: Kevin Budz <kevin.budz052@gmail.com>
 Architecture: any
