@@ -408,6 +408,14 @@ bool QuickBarApplet::eventFilter(QObject *watched, QEvent *event)
 
         // FIXME the panel margin breaks Fitt's law :(
         const QPointF &windowLocalPos = m_buttonGrid->window()->mapFromGlobal(e->globalPosition());
+        if (auto *contentItem = m_buttonGrid->parentItem()) {
+            if (auto *scroller = contentItem->parentItem()) {
+                const QPointF scrollerPos = scroller->mapFromScene(windowLocalPos);
+                if (scrollerPos.x() < 0 || scrollerPos.y() < 0 || scrollerPos.x() > scroller->width() || scrollerPos.y() > scroller->height()) {
+                    return false;
+                }
+            }
+        }
         const QPointF &buttonGridLocalPos = m_buttonGrid->mapFromScene(windowLocalPos);
         auto *item = m_buttonGrid->childAt(buttonGridLocalPos.x(), buttonGridLocalPos.y());
         if (!item) {
