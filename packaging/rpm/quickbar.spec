@@ -13,8 +13,9 @@ BuildRequires:  gcc-c++
 %if 0%{?suse_version}
 BuildRequires:  qt6-base-devel
 BuildRequires:  qt6-declarative-devel
-BuildRequires:  libplasma6-devel
-BuildRequires:  plasma6-workspace-devel
+# Needs the org.kde.plasma.configuration QML module (libplasma >= 6.5)
+BuildRequires:  libplasma6-devel >= 6.5
+BuildRequires:  plasma6-workspace-devel >= 6.5
 BuildRequires:  kf6-kconfig-devel
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-ki18n-devel
@@ -24,8 +25,9 @@ BuildRequires:  kf6-kirigami-devel
 %else
 BuildRequires:  qt6-qtbase-devel
 BuildRequires:  qt6-qtdeclarative-devel
-BuildRequires:  libplasma-devel
-BuildRequires:  plasma-workspace-devel
+# Needs the org.kde.plasma.configuration QML module (libplasma >= 6.5)
+BuildRequires:  libplasma-devel >= 6.5
+BuildRequires:  plasma-workspace-devel >= 6.5
 BuildRequires:  kf6-kconfig-devel
 BuildRequires:  kf6-kcoreaddons-devel
 BuildRequires:  kf6-ki18n-devel
