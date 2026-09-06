@@ -38,6 +38,7 @@ KCMUtils.SimpleKCM {
     readonly property bool cfg_enableMenuSearchDefault: true
     readonly property bool cfg_enableGenericMenuDefault: true
     readonly property string cfg_excludedItemsRegexDefault: ""
+    readonly property int cfg_maxMenuCellsDefault: 15
 
     property alias cfg_compactView: compactViewRadio.checked
     property alias cfg_allScreens: allScreensCheck.checked
@@ -50,6 +51,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_enableMenuSearch: enableMenuSearchCheck.checked
     property alias cfg_enableGenericMenu: enableGenericMenuCheck.checked
     property alias cfg_excludedItemsRegex: excludedItemsRegexField.text
+    property alias cfg_maxMenuCells: maxMenuCellsSpin.value
     property alias cfg_showApplicationName: showApplicationNameCheck.checked
     property alias cfg_showApplicationIcon: showApplicationIconCheck.checked
     property alias cfg_itemSpacing: itemSpacingSpin.value
@@ -278,6 +280,15 @@ KCMUtils.SimpleKCM {
                         id: hoverOpensMenuCheck
                         Kirigami.FormData.label: " "
                         text: i18n("Open menus on hover while a menu is already open")
+                    }
+
+                    QQC2.SpinBox {
+                        id: maxMenuCellsSpin
+                        Kirigami.FormData.label: i18n("Max dropdown rows:")
+                        from: 0
+                        to: 100
+                        QQC2.ToolTip.visible: hovered
+                        QQC2.ToolTip.text: i18n("Maximum number of rows visible in a dropdown menu before scrolling is triggered (0 = unlimited)")
                     }
 
                     QQC2.CheckBox {

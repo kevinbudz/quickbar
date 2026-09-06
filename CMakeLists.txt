@@ -19,7 +19,7 @@ include(FeatureSummary)
 
 # Core must be found first so Qt6CoreConfigExtras sets QT_DEFAULT_MAJOR_VERSION
 find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Widgets Quick DBus)
+find_package(Qt6 REQUIRED COMPONENTS Widgets WidgetsPrivate Quick DBus)
 find_package(X11 QUIET COMPONENTS Xtst)
 # Plasma::Plasma links KF6::ConfigCore, KF6::CoreAddons, etc. — find them before Plasma
 find_package(KF6 REQUIRED COMPONENTS Config CoreAddons I18n WindowSystem)
@@ -82,6 +82,7 @@ target_include_directories(org.quickbar.globalmenu PRIVATE
 target_link_libraries(org.quickbar.globalmenu PRIVATE
     Qt::Core
     Qt::Widgets
+    Qt::WidgetsPrivate
     Qt::Quick
     Qt::Qml
     Qt::DBus

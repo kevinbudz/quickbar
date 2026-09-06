@@ -32,6 +32,7 @@ PlasmoidItem {
     readonly property int maxVisibleItems: Plasmoid.configuration.maxVisibleItems
     readonly property bool centerButtonsWhenScrolling: Plasmoid.configuration.centerButtonsWhenScrolling
     readonly property int itemSpacing: Plasmoid.configuration.itemSpacing
+    readonly property int maxMenuCells: Plasmoid.configuration.maxMenuCells
     readonly property bool inPanelConfigure: Plasmoid.userConfiguring
         || (Plasmoid.containment?.corona?.editMode ?? false)
 
@@ -606,6 +607,7 @@ PlasmoidItem {
         Component.onCompleted: {
             Plasmoid.model = appMenuModel
             Plasmoid.hoverOpensMenu = Plasmoid.configuration.hoverOpensMenu
+            Plasmoid.maxMenuCells = Plasmoid.configuration.maxMenuCells
         }
     }
 
@@ -660,6 +662,9 @@ PlasmoidItem {
         target: Plasmoid.configuration
         function onHoverOpensMenuChanged() {
             Plasmoid.hoverOpensMenu = Plasmoid.configuration.hoverOpensMenu
+        }
+        function onMaxMenuCellsChanged() {
+            Plasmoid.maxMenuCells = Plasmoid.configuration.maxMenuCells
         }
         function onShowDesktopMenuChanged() {
             appMenuModel.showDesktopMenu = Plasmoid.configuration.showDesktopMenu

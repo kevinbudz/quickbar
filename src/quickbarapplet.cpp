@@ -12,14 +12,82 @@
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDBusServiceWatcher>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QProxyStyle>
 #include <QQuickItem>
 #include <QQuickWindow>
 #include <QScreen>
+#include <QStyle>
+#include <QStyleOptionMenuItem>
 #include <QTimer>
+#include <QTimerEvent>
+#include <QWheelEvent>
 #include <QWindow>
+#include <QtWidgets/private/qmenu_p.h>
+#include <KConfigGroup>
+
+class MenuClampStyle : public QProxyStyle
+{
+public:
+    int maxMenuWidth = 600;
+
+    explicit MenuClampStyle(QStyle *baseStyle = nullptr)
+        : QProxyStyle(baseStyle)
+    {
+    }
+
+    QSize sizeFromContents(ContentsType type, const QStyleOption *opt,
+                           const QSize &contentsSize, const QWidget *widget) const override
+    {
+        QSize sz = QProxyStyle::sizeFromContents(type, opt, contentsSize, widget);
+        if (type == CT_MenuItem) {
+            int reservedShortcut = 0;
+            if (const auto *m = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
+                reservedShortcut = m->reservedShortcutWidth;
+            }
+            const int maxItemWidth = maxMenuWidth - reservedShortcut - 24;
+            if (maxItemWidth > 50) {
+                sz.setWidth(qMin(sz.width(), maxItemWidth));
+            }
+        }
+        return sz;
+    }
+
+    void drawControl(ControlElement element, const QStyleOption *opt,
+                     QPainter *p, const QWidget *widget) const override
+    {
+        if (element == CE_MenuItem) {
+            if (const auto *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
+                QStyleOptionMenuItem copy = *menuItem;
+                const int reservedRight = (copy.reservedShortcutWidth > 0 ? copy.reservedShortcutWidth + 16 : 0)
+                                        + (copy.menuItemType == QStyleOptionMenuItem::SubMenu ? 16 : 0);
+                const int reservedLeft = copy.maxIconWidth > 0 ? copy.maxIconWidth + 12 : 8;
+                const int maxTextWidth = copy.rect.width() - reservedLeft - reservedRight - 16;
+
+                QString text = copy.text;
+                const int tabIndex = text.indexOf(QLatin1Char('\t'));
+                if (tabIndex != -1) {
+                    QString label = text.left(tabIndex);
+                    const QString shortcut = text.mid(tabIndex);
+                    if (maxTextWidth > 40 && copy.fontMetrics.horizontalAdvance(label) > maxTextWidth) {
+                        label = copy.fontMetrics.elidedText(label, Qt::ElideRight, maxTextWidth);
+                    }
+                    copy.text = label + shortcut;
+                } else {
+                    if (maxTextWidth > 40 && copy.fontMetrics.horizontalAdvance(text) > maxTextWidth) {
+                        copy.text = copy.fontMetrics.elidedText(text, Qt::ElideRight, maxTextWidth);
+                    }
+                }
+                QProxyStyle::drawControl(element, &copy, p, widget);
+                return;
+            }
+        }
+        QProxyStyle::drawControl(element, opt, p, widget);
+    }
+};
 
 QSet<QuickBarApplet *> QuickBarApplet::s_activeApplets;
 QPointer<QDBusServiceWatcher> QuickBarApplet::s_serviceWatcher;
@@ -108,6 +176,7 @@ void QuickBarApplet::onAppletDestroyedChanged(QuickBarApplet *applet, bool destr
 QuickBarApplet::QuickBarApplet(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
     : Plasma::Applet(parent, data, args)
 {
+    m_menuStyle = std::make_unique<MenuClampStyle>();
     onAppletCreated(this);
 
     connect(this, &Applet::destroyedChanged, this, [this](bool destroyed) {
@@ -153,8 +222,21 @@ void QuickBarApplet::restoreStolenActions()
 
 void QuickBarApplet::resetMenuState()
 {
-    if (m_currentMenu && m_currentMenu->isVisible()) {
-        m_currentMenu->hide();
+    if (m_currentMenu) {
+        m_currentMenu->removeEventFilter(this);
+        if (m_currentMenu->isVisible()) {
+            m_currentMenu->hide();
+        }
+        auto d = QMenuPrivate::get(m_currentMenu.data());
+        if (d && d->scroll) {
+            d->scroll->scrollOffset = 0;
+            d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+        }
+        m_currentMenu->setMaximumWidth(QWIDGETSIZE_MAX);
+        m_currentMenu->setMaximumHeight(QWIDGETSIZE_MAX);
+        if (!m_ownsCurrentMenu) {
+            m_currentMenu->setStyle(nullptr);
+        }
     }
     restoreStolenActions();
     setCurrentIndex(-1);
@@ -162,6 +244,7 @@ void QuickBarApplet::resetMenuState()
 
 void QuickBarApplet::init()
 {
+    m_maxMenuCells = config().readEntry("maxMenuCells", DefaultMaxMenuCells);
 }
 
 QAbstractItemModel *QuickBarApplet::model() const
@@ -244,6 +327,19 @@ void QuickBarApplet::setHoverOpensMenu(bool hover)
     }
 }
 
+int QuickBarApplet::maxMenuCells() const
+{
+    return m_maxMenuCells;
+}
+
+void QuickBarApplet::setMaxMenuCells(int cells)
+{
+    if (m_maxMenuCells != cells) {
+        m_maxMenuCells = cells;
+        Q_EMIT maxMenuCellsChanged();
+    }
+}
+
 QQuickItem *QuickBarApplet::buttonGrid() const
 {
     return m_buttonGrid;
@@ -282,12 +378,259 @@ QMenu *QuickBarApplet::createMenu(int idx) const
 void QuickBarApplet::onMenuAboutToHide()
 {
     if (m_currentMenu) {
+        m_currentMenu->removeEventFilter(this);
+        auto d = QMenuPrivate::get(m_currentMenu.data());
+        if (d && d->scroll) {
+            d->scroll->scrollOffset = 0;
+            d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+        }
+        m_currentMenu->setMaximumWidth(QWIDGETSIZE_MAX);
+        m_currentMenu->setMaximumHeight(QWIDGETSIZE_MAX);
+        if (!m_ownsCurrentMenu) {
+            m_currentMenu->setStyle(nullptr);
+        }
         auto menuAction = m_currentMenu->menuAction();
         if (menuAction && m_sourceMenu) {
             menuAction->setMenu(m_sourceMenu);
         }
     }
     setCurrentIndex(-1);
+}
+
+int QuickBarApplet::calculateMaxHeightForCells(QMenu *menu, int maxCells) const
+{
+    if (!menu) {
+        return 0;
+    }
+
+    menu->ensurePolished();
+
+    int cellHeight = 0;
+    for (const QAction *action : menu->actions()) {
+        if (!action->isSeparator() && action->isVisible()) {
+            const QRect rect = menu->actionGeometry(const_cast<QAction *>(action));
+            if (rect.height() > 0) {
+                cellHeight = rect.height();
+                break;
+            }
+        }
+    }
+    if (cellHeight <= 0) {
+        cellHeight = menu->fontMetrics().height() + 12;
+    }
+
+    int cellsSeen = 0;
+    int totalHeight = 0;
+    for (const QAction *action : menu->actions()) {
+        if (!action->isVisible()) {
+            continue;
+        }
+        const QRect rect = menu->actionGeometry(const_cast<QAction *>(action));
+        const int h = rect.height() > 0 ? rect.height() : (action->isSeparator() ? 6 : cellHeight);
+        totalHeight += h;
+        if (!action->isSeparator()) {
+            cellsSeen++;
+            if (cellsSeen >= maxCells) {
+                break;
+            }
+        }
+    }
+
+    QStyle *style = menu->style();
+    const int vmargin = style ? style->pixelMetric(QStyle::PM_MenuVMargin, nullptr, menu) : 2;
+    const int fw = style ? style->pixelMetric(QStyle::PM_MenuPanelWidth, nullptr, menu) : 2;
+    totalHeight += (vmargin + fw) * 2;
+
+    return totalHeight;
+}
+
+int QuickBarApplet::totalContentHeight(QMenu *menu) const
+{
+    if (!menu) {
+        return 0;
+    }
+    auto d = QMenuPrivate::get(menu);
+    if (!d || d->actionRects.isEmpty()) {
+        return menu->sizeHint().height();
+    }
+    int total = 0;
+    for (const QRect &r : d->actionRects) {
+        total += r.height();
+    }
+    QStyle *style = menu->style();
+    const int vmargin = style ? style->pixelMetric(QStyle::PM_MenuVMargin, nullptr, menu) : 2;
+    const int fw = style ? style->pixelMetric(QStyle::PM_MenuPanelWidth, nullptr, menu) : 2;
+    return total + (vmargin + fw) * 2;
+}
+
+bool QuickBarApplet::handleMenuWheel(QMenu *menu, QWheelEvent *e)
+{
+    if (!menu) {
+        return false;
+    }
+
+    auto d = QMenuPrivate::get(menu);
+    if (!d) {
+        return false;
+    }
+
+    if (!d->scroll) {
+        d->scroll = new QMenuPrivate::QMenuScroller;
+    }
+
+    const int totalHeight = totalContentHeight(menu);
+    const int visibleHeight = menu->height();
+
+    int deltaY = e->pixelDelta().y();
+    if (deltaY == 0) {
+        deltaY = e->angleDelta().y();
+    }
+
+    if (totalHeight > visibleHeight && deltaY != 0) {
+        int cellHeight = 29;
+        for (int i = 0; i < d->actions.size(); ++i) {
+            if (!d->actionRects.at(i).isNull()) {
+                cellHeight = d->actionRects.at(i).height();
+                break;
+            }
+        }
+
+        int step = 0;
+        if (e->pixelDelta().y() != 0) {
+            step = e->pixelDelta().y();
+        } else {
+            step = (e->angleDelta().y() / 120) * cellHeight * 3;
+            if (step == 0) {
+                step = e->angleDelta().y() > 0 ? cellHeight : -cellHeight;
+            }
+        }
+
+        const int minOffset = visibleHeight - totalHeight;
+        const int oldOffset = d->scroll->scrollOffset;
+        const int newOffset = qBound(minOffset, oldOffset + step, 0);
+        const int shift = newOffset - oldOffset;
+
+        if (shift != 0) {
+            for (int i = 0; i < d->actionRects.size(); ++i) {
+                d->actionRects[i].moveTop(d->actionRects[i].top() + shift);
+                if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
+                    w->setGeometry(d->actionRects[i]);
+                }
+            }
+            d->scroll->scrollOffset = newOffset;
+            uint newFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+            if (newOffset < 0) {
+                newFlags |= QMenuPrivate::QMenuScroller::ScrollUp;
+            }
+            if (newOffset > minOffset) {
+                newFlags |= QMenuPrivate::QMenuScroller::ScrollDown;
+            }
+            d->scroll->scrollFlags = newFlags;
+            menu->update();
+        }
+    }
+
+    e->accept();
+    return true;
+}
+
+void QuickBarApplet::clampActionRects(QMenu *menu) const
+{
+    if (!menu) {
+        return;
+    }
+    auto d = QMenuPrivate::get(menu);
+    if (!d) {
+        return;
+    }
+    QStyle *style = menu->style();
+    const int fw = style ? style->pixelMetric(QStyle::PM_MenuPanelWidth, nullptr, menu) : 2;
+    const int hmargin = style ? style->pixelMetric(QStyle::PM_MenuHMargin, nullptr, menu) : 2;
+    const int maxInnerWidth = menu->width() - (fw + hmargin) * 2;
+    for (int i = 0; i < d->actionRects.size(); ++i) {
+        if (d->actionRects[i].width() > maxInnerWidth) {
+            d->actionRects[i].setWidth(maxInnerWidth);
+            if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
+                w->setGeometry(d->actionRects[i]);
+            }
+        }
+    }
+}
+
+void QuickBarApplet::clampSubmenu(QMenu *sub)
+{
+    if (!sub) {
+        return;
+    }
+    if (m_menuStyle) {
+        sub->setStyle(m_menuStyle.get());
+    }
+    QScreen *screen = nullptr;
+    if (m_buttonGrid && m_buttonGrid->window() && m_buttonGrid->window()->screen()) {
+        screen = m_buttonGrid->window()->screen();
+    } else {
+        screen = QGuiApplication::primaryScreen();
+    }
+    const QRect geo = screen ? screen->availableVirtualGeometry() : QRect(0, 0, 1920, 1080);
+    const int clampedWidth = qBound(200, MaxMenuWidthPx, geo.width() - 40);
+    sub->setMaximumWidth(clampedWidth);
+
+    int clampedHeight = geo.height() - 40;
+    if (m_maxMenuCells > 0) {
+        const int cellsHeight = calculateMaxHeightForCells(sub, m_maxMenuCells);
+        clampedHeight = qMin(cellsHeight, geo.height() - 40);
+    }
+    if (clampedHeight > 0) {
+        sub->setMaximumHeight(clampedHeight);
+    }
+    sub->adjustSize();
+
+    auto d = QMenuPrivate::get(sub);
+    if (d) {
+        if (!d->scroll) {
+            d->scroll = new QMenuPrivate::QMenuScroller;
+        }
+        d->scroll->scrollOffset = 0;
+        if (totalContentHeight(sub) > sub->height()) {
+            d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollDown;
+        } else {
+            d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+        }
+    }
+    clampActionRects(sub);
+    hookSubmenus(sub);
+}
+
+void QuickBarApplet::hookSubmenus(QMenu *menu)
+{
+    if (!menu) {
+        return;
+    }
+    for (QAction *action : menu->actions()) {
+        if (action->toolTip().isEmpty()) {
+            action->setToolTip(action->text());
+        }
+        if (QMenu *sub = action->menu()) {
+            if (m_menuStyle) {
+                sub->setStyle(m_menuStyle.get());
+            }
+            sub->removeEventFilter(this);
+            sub->installEventFilter(this);
+            connect(sub, &QMenu::aboutToShow, this, [this, sub]() {
+                clampSubmenu(sub);
+            }, Qt::UniqueConnection);
+            connect(sub, &QMenu::aboutToHide, this, [sub]() {
+                auto d = QMenuPrivate::get(sub);
+                if (d && d->scroll) {
+                    d->scroll->scrollOffset = 0;
+                    d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+                }
+                sub->setMaximumWidth(QWIDGETSIZE_MAX);
+                sub->setMaximumHeight(QWIDGETSIZE_MAX);
+            }, Qt::UniqueConnection);
+            hookSubmenus(sub);
+        }
+    }
 }
 
 Qt::Edges edgeFromLocation(Plasma::Types::Location location)
@@ -343,9 +686,19 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
                 m_currentMenu.clear();
                 m_sourceMenu.clear();
                 m_currentMenu = new QMenu(qobject_cast<QWidget *>(actionMenu->parent()));
+                if (m_menuStyle) {
+                    m_currentMenu->setStyle(m_menuStyle.get());
+                }
                 m_ownsCurrentMenu = true;
                 connect(m_currentMenu, &QMenu::aboutToHide, this, &QuickBarApplet::onMenuAboutToHide, Qt::UniqueConnection);
             } else if (m_sourceMenu != actionMenu) {
+                m_currentMenu->setMaximumWidth(QWIDGETSIZE_MAX);
+                m_currentMenu->setMaximumHeight(QWIDGETSIZE_MAX);
+                auto d = QMenuPrivate::get(m_currentMenu.data());
+                if (d && d->scroll) {
+                    d->scroll->scrollOffset = 0;
+                    d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+                }
                 auto menuAction = m_currentMenu->menuAction();
                 for (QAction *action : m_currentMenu->actions()) {
                     m_currentMenu->removeAction(action);
@@ -378,6 +731,9 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
             }
             m_currentMenu.clear();
             m_currentMenu = actionMenu;
+            if (m_menuStyle) {
+                m_currentMenu->setStyle(m_menuStyle.get());
+            }
             m_sourceMenu = actionMenu;
             m_ownsCurrentMenu = false;
         }
@@ -396,27 +752,81 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
             pos.setY(pos.y() + ctx->height());
         }
 
+        const int clampedWidth = qBound(200, MaxMenuWidthPx, geo.width() - 40);
+        if (m_menuStyle) {
+            m_menuStyle->maxMenuWidth = clampedWidth;
+        }
+        m_currentMenu->setMaximumWidth(clampedWidth);
+
+        int screenMaxHeight = geo.height() - 20;
+        if (location() == Plasma::Types::TopEdge) {
+            screenMaxHeight = geo.y() + geo.height() - pos.y() - 10;
+        } else if (location() == Plasma::Types::BottomEdge) {
+            screenMaxHeight = pos.y() - geo.y() - 10;
+        }
+        const int clampedHeight = (m_maxMenuCells > 0)
+            ? qMin(calculateMaxHeightForCells(m_currentMenu.data(), m_maxMenuCells), screenMaxHeight)
+            : screenMaxHeight;
+        if (clampedHeight > 0) {
+            m_currentMenu->setMaximumHeight(clampedHeight);
+        }
+
+        for (QAction *action : m_currentMenu->actions()) {
+            if (action->toolTip().isEmpty()) {
+                action->setToolTip(action->text());
+            }
+        }
+
         m_currentMenu->adjustSize();
 
-        pos = QPoint(qBound(geo.x(), pos.x(), geo.x() + geo.width() - m_currentMenu->width()),
-                     qBound(geo.y(), pos.y(), geo.y() + geo.height() - m_currentMenu->height()));
+        const int maxX = qMax(geo.x(), geo.x() + geo.width() - m_currentMenu->width());
+        const int maxY = qMax(geo.y(), geo.y() + geo.height() - m_currentMenu->height());
+        pos = QPoint(qBound(geo.x(), pos.x(), maxX),
+                     qBound(geo.y(), pos.y(), maxY));
+
+        auto d = QMenuPrivate::get(m_currentMenu.data());
+        if (d && !d->scroll) {
+            d->scroll = new QMenuPrivate::QMenuScroller;
+        }
 
         if (view() == FullView) {
-            if (m_currentMenu->isVisible()) {
-                m_currentMenu->move(pos);
-            } else {
-                m_currentMenu->removeEventFilter(this);
-                m_currentMenu->installEventFilter(this);
-                m_currentMenu->winId(); // create window handle
-                m_currentMenu->windowHandle()->setTransientParent(ctx->window());
-                m_currentMenu->popup(pos);
+            m_currentMenu->removeEventFilter(this);
+            m_currentMenu->installEventFilter(this);
+            m_currentMenu->winId(); // create window handle
+            m_currentMenu->windowHandle()->setTransientParent(ctx->window());
+            m_currentMenu->popup(pos);
+
+            auto d = QMenuPrivate::get(m_currentMenu.data());
+            if (d) {
+                d->scroll->scrollOffset = 0;
+                if (totalContentHeight(m_currentMenu.data()) > m_currentMenu->height()) {
+                    d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollDown;
+                } else {
+                    d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+                }
             }
+            clampActionRects(m_currentMenu.data());
+            hookSubmenus(m_currentMenu.data());
         } else if (view() == CompactView) {
             if (m_currentMenu->isEmpty()) {
                 // don't try to popup an empty menu in case the app gives us one
                 return;
             }
+            m_currentMenu->removeEventFilter(this);
+            m_currentMenu->installEventFilter(this);
             m_currentMenu->popup(pos);
+
+            auto d = QMenuPrivate::get(m_currentMenu.data());
+            if (d) {
+                d->scroll->scrollOffset = 0;
+                if (totalContentHeight(m_currentMenu.data()) > m_currentMenu->height()) {
+                    d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollDown;
+                } else {
+                    d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+                }
+            }
+            clampActionRects(m_currentMenu.data());
+            hookSubmenus(m_currentMenu.data());
             connect(actionMenu, &QMenu::aboutToHide, this, &QuickBarApplet::onMenuAboutToHide, Qt::UniqueConnection);
         }
 
@@ -431,11 +841,67 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
     }
 }
 
-// FIXME TODO doesn't work on submenu
 bool QuickBarApplet::eventFilter(QObject *watched, QEvent *event)
 {
     auto *menu = qobject_cast<QMenu *>(watched);
     if (!menu) {
+        return false;
+    }
+
+    if (event->type() == QEvent::Paint || event->type() == QEvent::LayoutRequest || event->type() == QEvent::Show) {
+        clampActionRects(menu);
+    }
+
+    if (event->type() == QEvent::Wheel) {
+        auto *e = static_cast<QWheelEvent *>(event);
+        handleMenuWheel(menu, e);
+        return true;
+    }
+
+    if (event->type() == QEvent::Timer) {
+        auto d = QMenuPrivate::get(menu);
+        if (d && d->scroll && static_cast<QTimerEvent *>(event)->timerId() == d->scroll->scrollTimer.timerId()) {
+            const int totalHeight = totalContentHeight(menu);
+            const int visibleHeight = menu->height();
+            if (totalHeight > visibleHeight) {
+                int cellHeight = 29;
+                for (int i = 0; i < d->actions.size(); ++i) {
+                    if (!d->actionRects.at(i).isNull()) {
+                        cellHeight = d->actionRects.at(i).height();
+                        break;
+                    }
+                }
+                const int step = (d->scroll->scrollDirection == QMenuPrivate::QMenuScroller::ScrollUp) ? cellHeight : -cellHeight;
+                const int minOffset = visibleHeight - totalHeight;
+                const int oldOffset = d->scroll->scrollOffset;
+                const int newOffset = qBound(minOffset, oldOffset + step, 0);
+                const int shift = newOffset - oldOffset;
+                if (shift != 0) {
+                    for (int i = 0; i < d->actionRects.size(); ++i) {
+                        d->actionRects[i].moveTop(d->actionRects[i].top() + shift);
+                        if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
+                            w->setGeometry(d->actionRects[i]);
+                        }
+                    }
+                    d->scroll->scrollOffset = newOffset;
+                    uint newFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+                    if (newOffset < 0) {
+                        newFlags |= QMenuPrivate::QMenuScroller::ScrollUp;
+                    }
+                    if (newOffset > minOffset) {
+                        newFlags |= QMenuPrivate::QMenuScroller::ScrollDown;
+                    }
+                    d->scroll->scrollFlags = newFlags;
+                    menu->update();
+                } else {
+                    d->scroll->scrollTimer.stop();
+                }
+            }
+            return true;
+        }
+    }
+
+    if (menu != m_currentMenu) {
         return false;
     }
 

@@ -8,6 +8,8 @@
 
 #include <Plasma/Applet>
 
+#include <memory>
+
 #include <QAbstractItemModel>
 #include <QPointer>
 #include <QSet>
@@ -15,6 +17,8 @@
 class QQuickItem;
 class QMenu;
 class QDBusServiceWatcher;
+class QWheelEvent;
+class MenuClampStyle;
 
 class QuickBarApplet : public Plasma::Applet
 {
@@ -29,6 +33,7 @@ class QuickBarApplet : public Plasma::Applet
 
     Q_PROPERTY(QQuickItem *buttonGrid READ buttonGrid WRITE setButtonGrid NOTIFY buttonGridChanged)
     Q_PROPERTY(bool hoverOpensMenu READ hoverOpensMenu WRITE setHoverOpensMenu NOTIFY hoverOpensMenuChanged)
+    Q_PROPERTY(int maxMenuCells READ maxMenuCells WRITE setMaxMenuCells NOTIFY maxMenuCellsChanged)
 
 public:
     enum ViewType {
@@ -49,6 +54,9 @@ public:
     bool hoverOpensMenu() const;
     void setHoverOpensMenu(bool hover);
 
+    int maxMenuCells() const;
+    void setMaxMenuCells(int cells);
+
     QAbstractItemModel *model() const;
     void setModel(QAbstractItemModel *model);
 
@@ -63,6 +71,7 @@ Q_SIGNALS:
     void currentIndexChanged();
     void buttonGridChanged();
     void hoverOpensMenuChanged();
+    void maxMenuCellsChanged();
     void requestActivateIndex(int index);
 
 public Q_SLOTS:
@@ -72,6 +81,16 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
+    static constexpr int MaxMenuWidthPx = 600;
+    static constexpr int DefaultMaxMenuCells = 15;
+
+    int calculateMaxHeightForCells(QMenu *menu, int maxCells) const;
+    int totalContentHeight(QMenu *menu) const;
+    bool handleMenuWheel(QMenu *menu, QWheelEvent *e);
+    void clampActionRects(QMenu *menu) const;
+    void hookSubmenus(QMenu *menu);
+    void clampSubmenu(QMenu *sub);
+
     QMenu *createMenu(int idx) const;
     void setCurrentIndex(int currentIndex);
     void onMenuAboutToHide();
@@ -92,8 +111,10 @@ private:
     static QSet<QuickBarApplet *> s_activeApplets;
     static QPointer<QDBusServiceWatcher> s_serviceWatcher;
 
+    std::unique_ptr<MenuClampStyle> m_menuStyle;
     int m_currentIndex = -1;
     bool m_hoverOpensMenu = true;
+    int m_maxMenuCells = DefaultMaxMenuCells;
     int m_viewType = FullView;
     QPointer<QMenu> m_currentMenu;
     QPointer<QMenu> m_sourceMenu;

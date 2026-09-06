@@ -120,5 +120,9 @@
       <label>Regular expression to exclude matching top-level menu items</label>
       <default></default>
     </entry>
+    <entry name="maxMenuCells" type="Int">
+      <label>Maximum dropdown menu rows before scrolling (0 = unlimited)</label>
+      <default>15</default>
+    </entry>
   </group>
 </kcfg>
