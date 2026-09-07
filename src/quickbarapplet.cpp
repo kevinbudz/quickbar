@@ -223,6 +223,7 @@ void QuickBarApplet::restoreStolenActions()
 void QuickBarApplet::resetMenuState()
 {
     if (m_currentMenu) {
+        unhookSubmenus(m_currentMenu.data());
         m_currentMenu->removeEventFilter(this);
         if (m_currentMenu->isVisible()) {
             m_currentMenu->hide();
@@ -378,6 +379,7 @@ QMenu *QuickBarApplet::createMenu(int idx) const
 void QuickBarApplet::onMenuAboutToHide()
 {
     if (m_currentMenu) {
+        unhookSubmenus(m_currentMenu.data());
         m_currentMenu->removeEventFilter(this);
         auto d = QMenuPrivate::get(m_currentMenu.data());
         if (d && d->scroll) {
@@ -488,9 +490,9 @@ bool QuickBarApplet::handleMenuWheel(QMenu *menu, QWheelEvent *e)
 
     if (totalHeight > visibleHeight && deltaY != 0) {
         int cellHeight = 29;
-        for (int i = 0; i < d->actions.size(); ++i) {
-            if (!d->actionRects.at(i).isNull()) {
-                cellHeight = d->actionRects.at(i).height();
+        for (const QRect &r : d->actionRects) {
+            if (!r.isNull() && r.height() > 0) {
+                cellHeight = r.height();
                 break;
             }
         }
@@ -513,8 +515,10 @@ bool QuickBarApplet::handleMenuWheel(QMenu *menu, QWheelEvent *e)
         if (shift != 0) {
             for (int i = 0; i < d->actionRects.size(); ++i) {
                 d->actionRects[i].moveTop(d->actionRects[i].top() + shift);
-                if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
-                    w->setGeometry(d->actionRects[i]);
+                if (i < d->actions.size()) {
+                    if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
+                        w->setGeometry(d->actionRects[i]);
+                    }
                 }
             }
             d->scroll->scrollOffset = newOffset;
@@ -550,8 +554,10 @@ void QuickBarApplet::clampActionRects(QMenu *menu) const
     for (int i = 0; i < d->actionRects.size(); ++i) {
         if (d->actionRects[i].width() > maxInnerWidth) {
             d->actionRects[i].setWidth(maxInnerWidth);
-            if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
-                w->setGeometry(d->actionRects[i]);
+            if (i < d->actions.size()) {
+                if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
+                    w->setGeometry(d->actionRects[i]);
+                }
             }
         }
     }
@@ -601,6 +607,50 @@ void QuickBarApplet::clampSubmenu(QMenu *sub)
     hookSubmenus(sub);
 }
 
+void QuickBarApplet::onSubmenuAboutToShow()
+{
+    if (auto *sub = qobject_cast<QMenu *>(sender())) {
+        clampSubmenu(sub);
+    }
+}
+
+void QuickBarApplet::onSubmenuAboutToHide()
+{
+    if (auto *sub = qobject_cast<QMenu *>(sender())) {
+        auto d = QMenuPrivate::get(sub);
+        if (d && d->scroll) {
+            d->scroll->scrollOffset = 0;
+            d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+        }
+        sub->setMaximumWidth(QWIDGETSIZE_MAX);
+        sub->setMaximumHeight(QWIDGETSIZE_MAX);
+        sub->setStyle(nullptr);
+    }
+}
+
+void QuickBarApplet::unhookSubmenus(QMenu *menu)
+{
+    if (!menu) {
+        return;
+    }
+    for (QAction *action : menu->actions()) {
+        if (QMenu *sub = action->menu()) {
+            sub->removeEventFilter(this);
+            disconnect(sub, &QMenu::aboutToShow, this, &QuickBarApplet::onSubmenuAboutToShow);
+            disconnect(sub, &QMenu::aboutToHide, this, &QuickBarApplet::onSubmenuAboutToHide);
+            auto d = QMenuPrivate::get(sub);
+            if (d && d->scroll) {
+                d->scroll->scrollOffset = 0;
+                d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
+            }
+            sub->setMaximumWidth(QWIDGETSIZE_MAX);
+            sub->setMaximumHeight(QWIDGETSIZE_MAX);
+            sub->setStyle(nullptr);
+            unhookSubmenus(sub);
+        }
+    }
+}
+
 void QuickBarApplet::hookSubmenus(QMenu *menu)
 {
     if (!menu) {
@@ -611,23 +661,10 @@ void QuickBarApplet::hookSubmenus(QMenu *menu)
             action->setToolTip(action->text());
         }
         if (QMenu *sub = action->menu()) {
-            if (m_menuStyle) {
-                sub->setStyle(m_menuStyle.get());
-            }
             sub->removeEventFilter(this);
             sub->installEventFilter(this);
-            connect(sub, &QMenu::aboutToShow, this, [this, sub]() {
-                clampSubmenu(sub);
-            }, Qt::UniqueConnection);
-            connect(sub, &QMenu::aboutToHide, this, [sub]() {
-                auto d = QMenuPrivate::get(sub);
-                if (d && d->scroll) {
-                    d->scroll->scrollOffset = 0;
-                    d->scroll->scrollFlags = QMenuPrivate::QMenuScroller::ScrollNone;
-                }
-                sub->setMaximumWidth(QWIDGETSIZE_MAX);
-                sub->setMaximumHeight(QWIDGETSIZE_MAX);
-            }, Qt::UniqueConnection);
+            connect(sub, &QMenu::aboutToShow, this, &QuickBarApplet::onSubmenuAboutToShow, Qt::UniqueConnection);
+            connect(sub, &QMenu::aboutToHide, this, &QuickBarApplet::onSubmenuAboutToHide, Qt::UniqueConnection);
             hookSubmenus(sub);
         }
     }
@@ -692,6 +729,7 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
                 m_ownsCurrentMenu = true;
                 connect(m_currentMenu, &QMenu::aboutToHide, this, &QuickBarApplet::onMenuAboutToHide, Qt::UniqueConnection);
             } else if (m_sourceMenu != actionMenu) {
+                unhookSubmenus(m_currentMenu.data());
                 m_currentMenu->setMaximumWidth(QWIDGETSIZE_MAX);
                 m_currentMenu->setMaximumHeight(QWIDGETSIZE_MAX);
                 auto d = QMenuPrivate::get(m_currentMenu.data());
@@ -865,9 +903,9 @@ bool QuickBarApplet::eventFilter(QObject *watched, QEvent *event)
             const int visibleHeight = menu->height();
             if (totalHeight > visibleHeight) {
                 int cellHeight = 29;
-                for (int i = 0; i < d->actions.size(); ++i) {
-                    if (!d->actionRects.at(i).isNull()) {
-                        cellHeight = d->actionRects.at(i).height();
+                for (const QRect &r : d->actionRects) {
+                    if (!r.isNull() && r.height() > 0) {
+                        cellHeight = r.height();
                         break;
                     }
                 }
@@ -879,8 +917,10 @@ bool QuickBarApplet::eventFilter(QObject *watched, QEvent *event)
                 if (shift != 0) {
                     for (int i = 0; i < d->actionRects.size(); ++i) {
                         d->actionRects[i].moveTop(d->actionRects[i].top() + shift);
-                        if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
-                            w->setGeometry(d->actionRects[i]);
+                        if (i < d->actions.size()) {
+                            if (QWidget *w = d->widgetItems.value(d->actions.at(i))) {
+                                w->setGeometry(d->actionRects[i]);
+                            }
                         }
                     }
                     d->scroll->scrollOffset = newOffset;

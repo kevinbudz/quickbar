@@ -89,7 +89,10 @@ private:
     bool handleMenuWheel(QMenu *menu, QWheelEvent *e);
     void clampActionRects(QMenu *menu) const;
     void hookSubmenus(QMenu *menu);
+    void unhookSubmenus(QMenu *menu);
     void clampSubmenu(QMenu *sub);
+    void onSubmenuAboutToShow();
+    void onSubmenuAboutToHide();
 
     QMenu *createMenu(int idx) const;
     void setCurrentIndex(int currentIndex);
