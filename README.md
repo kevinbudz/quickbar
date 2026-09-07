@@ -4,25 +4,12 @@ A Plasma 6+ panel widget that shows the active application's global menu (the sa
 
 ## Requirements
 
-- Plasma 6.5+ (KF6 / Qt6) — `plasma_add_applet()` needs libplasma ≥ 6.3, the `org.kde.plasma.configuration` QML module needs ≥ 6.5
-- Build deps: `cmake`, `extra-cmake-modules`, `gcc`, `libplasma`, `plasma-workspace` (LibTaskManager), `qt6-base`, `qt6-declarative`, `kconfig`, `kcoreaddons`, `ki18n`, `kitemmodels`, `kwindowsystem`, `kirigami`
-
-`libdbusmenuqt` is vendored from plasma-workspace (no separate package required).
+- Plasma 6.5+ (KF6 / Qt6)
+- Build dependencies: `cmake`, `extra-cmake-modules`, `gcc`, `libplasma`, `plasma-workspace` (LibTaskManager), `qt6-base`, `qt6-declarative`, `kconfig`, `kcoreaddons`, `ki18n`, `kitemmodels`, `kwindowsystem`, `kirigami` (`libdbusmenuqt` is vendored)
 
 ## Installation
 
-| Distro | Method | Package |
-|--------|--------|---------|
-| Arch / CachyOS | AUR | `plasma6-applets-quickbar` |
-| openSUSE Tumbleweed | OBS (`home:kevinbudz`) | `quickbar` |
-| Fedora 44 / Rawhide | OBS (`home:kevinbudz`) | `quickbar` |
-| Debian Testing / Unstable | OBS (`home:kevinbudz`) | `quickbar` |
-| Other distros (Plasma 6.5+) | Manual build | `quickbar` |
-| Any distro | `install.sh` / CMake from source | — |
-
-Requires Plasma 6.5+ (KF6 / Qt6). Older stacks (e.g. Fedora ≤ 43's Plasma ≤ 6.4, Debian 13 Trixie / Ubuntu ≤ 25.10's Plasma ≤ 6.4) fail configure with a clear message.
-
-### Arch / CachyOS (AUR)
+### Arch (AUR)
 
 ```bash
 yay -S plasma6-applets-quickbar
@@ -37,14 +24,14 @@ sudo zypper refresh
 sudo zypper install quickbar
 ```
 
-### Fedora (OBS)
+### Fedora 44 / Rawhide (OBS)
 
 ```bash
 sudo dnf config-manager addrepo --from-repofile=https://download.opensuse.org/repositories/home:kevinbudz/Fedora_44/home:kevinbudz.repo
 sudo dnf install quickbar
 ```
 
-On Rawhide swap `Fedora_44` for `Fedora_Rawhide`.
+On Rawhide, replace `Fedora_44` with `Fedora_Rawhide`.
 
 ### Debian Testing / Unstable (OBS)
 
@@ -56,13 +43,13 @@ echo 'deb https://download.opensuse.org/repositories/home:kevinbudz/Debian_Testi
 sudo apt update && sudo apt install quickbar
 ```
 
-On Sid swap `Debian_Testing` for `Debian_Next`.
+On Sid, replace `Debian_Testing` with `Debian_Next`.
 
 
-## From source
+### From source
 
 ```bash
 ./install.sh
 ```
 
-Then restart Plasma (`kquitapp6 plasmashell && plasmashell &`) and add QuickBar from the widget gallery. Manual builds: see [`packaging/`](packaging/).
+Then restart Plasma (`kquitapp6 plasmashell && plasmashell &`) and add QuickBar from the widget gallery. For manual builds, see [`packaging/`](packaging/).
