@@ -142,40 +142,163 @@ PlasmoidItem {
         // Generation counter bumped whenever the Repeater recreates delegates.
         // Pure bindings that read itemAt() lose their dependencies when old
         // delegates are destroyed: if a modelReset is evaluated while itemAt()
-        // is null it returns the full width and, with identical widths, never
-        // re-evaluates — leaving the bar fully expanded (which also hides the
-        // scrollbar, since nothing overflows) until refocus rebuilds the model.
-        // Depending on _capRefresh forces re-measures; the poller below keeps
-        // bumping until every delegate exists, since DBus menus can rebuild in
-        // stages across several event-loop ticks and a single deferred bump can
-        // still observe nulls.
+        // is null it returns the full width and never re-evaluates — leaving
+        // the bar fully expanded (which also hides the scrollbar, since nothing
+        // overflows) until refocus rebuilds the model. Depending on _capRefresh
+        // forces re-measures; the poller below keeps bumping until every
+        // delegate exists and is properly sized/settled.
+        //
+        // NOTE: the dependency must be a real branch (`if (_capRefresh < 0)`),
+        // not a bare `_capRefresh;` statement: the QML AOT compiler eliminates
+        // bare reads as dead code, so the binding would never re-evaluate when
+        // shipped compiled (via rcc/qmlcache) and stay stale at 0/full width.
         property int _capRefresh: 0
         property int _capRetries: 0
 
         function scheduleCapRefresh() {
-            _capRetries = 8
+            _capRetries = 25
             _capPoller.restart()
         }
 
-        function _capsSettled() {
+        // Live (uncached) helpers: read itemAt() directly so the settled check
+        // never observes stale compiled bindings right after _capRefresh++.
+        function _liveVisibleCount() {
             if (buttonRepeater.count <= 0) {
+                return 0
+            }
+            let c = 0
+            for (let i = 0; i < buttonRepeater.count; ++i) {
+                const b = buttonRepeater.itemAt(i)
+                if (b && b.visible) {
+                    c += 1
+                }
+            }
+            return c
+        }
+
+        function _liveCapWidth() {
+            const full = buttonGrid.implicitWidth
+            if (root.vertical || maxVisibleItems <= 0 || buttonRepeater.count <= 0) {
+                return full
+            }
+            let seen = 0
+            let capWidth = 0
+            for (let i = 0; i < buttonRepeater.count; ++i) {
+                const b = buttonRepeater.itemAt(i)
+                if (!b) {
+                    return full
+                }
+                if (!b.visible) {
+                    continue
+                }
+                const bw = Math.ceil(b.width > 0 ? b.width : b.implicitWidth)
+                if (bw <= 0) {
+                    return full
+                }
+                capWidth += (seen > 0 ? itemSpacing : 0) + bw
+                seen += 1
+                if (seen === maxVisibleItems) {
+                    return Math.min(full, capWidth)
+                }
+            }
+            return full
+        }
+
+        function _liveCapHeight() {
+            const full = buttonGrid.implicitHeight
+            if (!root.vertical || maxVisibleItems <= 0 || buttonRepeater.count <= 0) {
+                return full
+            }
+            let seen = 0
+            let capHeight = 0
+            for (let i = 0; i < buttonRepeater.count; ++i) {
+                const b = buttonRepeater.itemAt(i)
+                if (!b) {
+                    return full
+                }
+                if (!b.visible) {
+                    continue
+                }
+                const bh = Math.ceil(b.height > 0 ? b.height : b.implicitHeight)
+                if (bh <= 0) {
+                    return full
+                }
+                capHeight += (seen > 0 ? itemSpacing : 0) + bh
+                seen += 1
+                if (seen === maxVisibleItems) {
+                    return Math.min(full, capHeight)
+                }
+            }
+            return full
+        }
+
+        function _capsSettled() {
+            if (!appMenuModel.menuAvailable) {
                 return true
             }
+            if (buttonRepeater.count <= 0) {
+                return false
+            }
+            if (buttonRepeater.count !== appMenuModel.rowCount()) {
+                return false
+            }
             for (let i = 0; i < buttonRepeater.count; ++i) {
-                if (!buttonRepeater.itemAt(i)) {
+                const b = buttonRepeater.itemAt(i)
+                if (!b) {
                     return false
                 }
+                if (b.visible) {
+                    const bw = Math.ceil(b.width > 0 ? b.width : b.implicitWidth)
+                    const bh = Math.ceil(b.height > 0 ? b.height : b.implicitHeight)
+                    if (bw <= 0 || bh <= 0) {
+                        return false
+                    }
+                }
+            }
+            const liveVis = _liveVisibleCount()
+            if (maxVisibleItems > 0 && liveVis > maxVisibleItems) {
+                if (!root.vertical && _liveCapWidth() >= buttonGrid.implicitWidth) {
+                    return false
+                }
+                if (root.vertical && _liveCapHeight() >= buttonGrid.implicitHeight) {
+                    return false
+                }
+                // Live state is capped, but the cached bindings observed right
+                // after _capRefresh++ are one tick behind. Keep polling until
+                // they catch up, otherwise we stop with visibleButtonCount=0
+                // stale and the scrollbar never appears.
+                if (visibleButtonCount !== liveVis) {
+                    return false
+                }
+                if (!root.vertical && menuCapWidth !== _liveCapWidth()) {
+                    return false
+                }
+                if (root.vertical && menuCapHeight !== _liveCapHeight()) {
+                    return false
+                }
+            } else if (visibleButtonCount !== liveVis) {
+                return false
             }
             return true
         }
 
         Timer {
             id: _capPoller
-            interval: 50
+            interval: 40
             repeat: true
             onTriggered: {
+                // Check BEFORE bumping: bindings re-evaluate asynchronously,
+                // so a check immediately after ++ would observe stale values
+                // and stop after a single tick with the bar fully expanded.
+                // _capsSettled() already verifies the cached bindings match
+                // the live delegates, so it is safe to stop as soon as it
+                // returns true.
+                if (fullRoot._capsSettled()) {
+                    stop()
+                    return
+                }
                 fullRoot._capRefresh++
-                if (fullRoot._capsSettled() || --fullRoot._capRetries <= 0) {
+                if (--fullRoot._capRetries <= 0) {
                     stop()
                 }
             }
@@ -185,7 +308,11 @@ PlasmoidItem {
         // Flickable so a trailing layout gap (or 1px rounding) when count ==
         // max never enables scrolling or draws a scrollbar.
         readonly property int visibleButtonCount: {
-            _capRefresh
+            // Real branch dependency on _capRefresh (see note above): a bare
+            // `_capRefresh;` read is eliminated by the QML AOT compiler.
+            if (_capRefresh < 0) {
+                return -1
+            }
             if (buttonRepeater.count <= 0) {
                 return 0
             }
@@ -203,16 +330,19 @@ PlasmoidItem {
         }
         readonly property bool hasOverflow: maxVisibleItems > 0 && visibleButtonCount > maxVisibleItems
 
-        // Inner width capped to the first N *visible* buttons, using the real
-        // layout edge (Nth button's x + width). Reads of b.visible/x/width keep
-        // this binding reactive.
+        // Inner width capped to the first N *visible* buttons, summing their
+        // measured widths and spacing so the cap does not depend on asynchronous
+        // layout positioning (b.x) or break in RTL.
         readonly property int menuCapWidth: {
-            _capRefresh
+            if (_capRefresh < 0) {
+                return -1
+            }
             const full = buttonGrid.implicitWidth
             if (root.vertical || maxVisibleItems <= 0 || buttonRepeater.count <= 0) {
                 return full
             }
             let seen = 0
+            let capWidth = 0
             for (let i = 0; i < buttonRepeater.count; ++i) {
                 const b = buttonRepeater.itemAt(i)
                 if (!b) {
@@ -221,25 +351,29 @@ PlasmoidItem {
                 if (!b.visible) {
                     continue
                 }
+                const bw = Math.ceil(b.width > 0 ? b.width : b.implicitWidth)
+                if (bw <= 0) {
+                    return full
+                }
+                capWidth += (seen > 0 ? itemSpacing : 0) + bw
                 seen += 1
                 if (seen === maxVisibleItems) {
-                    const edge = Math.ceil(b.x + b.width)
-                    if (edge <= 0) {
-                        return full
-                    }
-                    return Math.min(full, edge)
+                    return Math.min(full, capWidth)
                 }
             }
             return full // fewer visible buttons than the limit
         }
 
         readonly property int menuCapHeight: {
-            _capRefresh
+            if (_capRefresh < 0) {
+                return -1
+            }
             const full = buttonGrid.implicitHeight
             if (!root.vertical || maxVisibleItems <= 0 || buttonRepeater.count <= 0) {
                 return full
             }
             let seen = 0
+            let capHeight = 0
             for (let i = 0; i < buttonRepeater.count; ++i) {
                 const b = buttonRepeater.itemAt(i)
                 if (!b) {
@@ -248,13 +382,14 @@ PlasmoidItem {
                 if (!b.visible) {
                     continue
                 }
+                const bh = Math.ceil(b.height > 0 ? b.height : b.implicitHeight)
+                if (bh <= 0) {
+                    return full
+                }
+                capHeight += (seen > 0 ? itemSpacing : 0) + bh
                 seen += 1
                 if (seen === maxVisibleItems) {
-                    const edge = Math.ceil(b.y + b.height)
-                    if (edge <= 0) {
-                        return full
-                    }
-                    return Math.min(full, edge)
+                    return Math.min(full, capHeight)
                 }
             }
             return full
@@ -342,6 +477,18 @@ PlasmoidItem {
                 menuScroller.contentY = 0
                 fullRoot.scheduleCapRefresh()
             }
+            function onDataChanged() {
+                fullRoot.scheduleCapRefresh()
+            }
+            function onRowsInserted() {
+                fullRoot.scheduleCapRefresh()
+            }
+            function onRowsRemoved() {
+                fullRoot.scheduleCapRefresh()
+            }
+            function onLayoutChanged() {
+                fullRoot.scheduleCapRefresh()
+            }
             function onApplicationNameChanged() {
                 menuScroller.contentX = 0
                 menuScroller.contentY = 0
@@ -349,6 +496,7 @@ PlasmoidItem {
             function onMenuAvailableChanged() {
                 menuScroller.contentX = 0
                 menuScroller.contentY = 0
+                fullRoot.scheduleCapRefresh()
             }
         }
 
@@ -511,6 +659,13 @@ PlasmoidItem {
                 id: buttonGrid
                 width: implicitWidth
                 height: implicitHeight
+                // Always re-measure on implicit size changes: gating on the
+                // (possibly stale) hasOverflow/cap here would prevent recovery
+                // when the cap is stuck at full width. scheduleCapRefresh only
+                // restarts the poller, so this cannot loop (the cap never feeds
+                // back into implicitWidth/Height).
+                onImplicitWidthChanged: fullRoot.scheduleCapRefresh()
+                onImplicitHeightChanged: fullRoot.scheduleCapRefresh()
                 // Center the buttons in the viewport when everything fits, so a
                 // taller app-name prefix can't leave them riding high. While
                 // scrolling (overflow) they stay top-aligned unless the "Center
@@ -539,6 +694,7 @@ PlasmoidItem {
                     model: appMenuModel.menuAvailable ? appMenuModel : null
                     onItemAdded: fullRoot.scheduleCapRefresh()
                     onItemRemoved: fullRoot.scheduleCapRefresh()
+                    onCountChanged: fullRoot.scheduleCapRefresh()
 
                     MenuDelegate {
                         required property int index
