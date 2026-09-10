@@ -14,6 +14,7 @@
 #include <QDBusServiceWatcher>
 #include <QGuiApplication>
 #include <QKeyEvent>
+#include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QProxyStyle>
@@ -868,6 +869,13 @@ void QuickBarApplet::trigger(QQuickItem *ctx, int idx)
             connect(actionMenu, &QMenu::aboutToHide, this, &QuickBarApplet::onMenuAboutToHide, Qt::UniqueConnection);
         }
 
+        if (auto *lineEdit = m_currentMenu->findChild<QLineEdit *>()) {
+            QTimer::singleShot(0, lineEdit, [lineEdit]() {
+                lineEdit->setFocus(Qt::PopupFocusReason);
+                lineEdit->selectAll();
+            });
+        }
+
         setCurrentIndex(idx);
 
         // FIXME TODO connect only once
@@ -888,6 +896,14 @@ bool QuickBarApplet::eventFilter(QObject *watched, QEvent *event)
 
     if (event->type() == QEvent::Paint || event->type() == QEvent::LayoutRequest || event->type() == QEvent::Show) {
         clampActionRects(menu);
+        if (event->type() == QEvent::Show) {
+            if (auto *lineEdit = menu->findChild<QLineEdit *>()) {
+                QTimer::singleShot(0, lineEdit, [lineEdit]() {
+                    lineEdit->setFocus(Qt::PopupFocusReason);
+                    lineEdit->selectAll();
+                });
+            }
+        }
     }
 
     if (event->type() == QEvent::Wheel) {
@@ -947,6 +963,14 @@ bool QuickBarApplet::eventFilter(QObject *watched, QEvent *event)
 
     if (event->type() == QEvent::KeyPress) {
         auto *e = static_cast<QKeyEvent *>(event);
+
+        if (auto *lineEdit = menu->findChild<QLineEdit *>()) {
+            if (lineEdit->hasFocus()) {
+                if (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right) {
+                    return false;
+                }
+            }
+        }
 
         // TODO right to left languages
         if (e->key() == Qt::Key_Left) {

@@ -168,7 +168,10 @@ AppMenuModel::AppMenuModel(QObject *parent)
         insertSearchActionsIntoMenu(searchBar->text());
     });
     connect(m_searchMenu.get(), &QMenu::aboutToShow, searchBar, [searchBar]() {
-        searchBar->setFocus();
+        QTimer::singleShot(0, searchBar, [searchBar]() {
+            searchBar->setFocus(Qt::PopupFocusReason);
+            searchBar->selectAll();
+        });
     });
     searchAction->setDefaultWidget(searchBar);
     m_searchMenu->addAction(searchAction);
@@ -455,7 +458,28 @@ void AppMenuModel::onActiveWindowChanged()
 
     auto updateAppNameAndIcon = [this](const QModelIndex &index) {
         if (index.isValid()) {
-            setApplicationName(m_tasksModel->data(index, TaskManager::AbstractTasksModel::AppName).toString());
+            QString name = m_tasksModel->data(index, TaskManager::AbstractTasksModel::AppName).toString();
+            if (name.isEmpty()) {
+                name = m_tasksModel->data(index, TaskManager::AbstractTasksModel::GenericName).toString();
+            }
+            if (name.isEmpty()) {
+                QString appId = m_tasksModel->data(index, TaskManager::AbstractTasksModel::AppId).toString();
+                if (!appId.isEmpty()) {
+                    if (appId.endsWith(QLatin1String(".desktop"))) {
+                        appId.chop(8);
+                    }
+                    const int lastDot = appId.lastIndexOf(QLatin1Char('.'));
+                    if (lastDot >= 0 && lastDot + 1 < appId.length()) {
+                        name = appId.mid(lastDot + 1);
+                    } else {
+                        name = appId;
+                    }
+                }
+            }
+            if (name.isEmpty()) {
+                name = m_tasksModel->data(index, Qt::DisplayRole).toString();
+            }
+            setApplicationName(name);
             QVariant iconVar = m_tasksModel->data(index, Qt::DecorationRole);
             if (!iconVar.isValid() || iconVar.isNull()) {
                 iconVar = m_tasksModel->data(index, TaskManager::AbstractTasksModel::AppId);

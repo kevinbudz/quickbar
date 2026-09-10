@@ -93,9 +93,9 @@ PlasmoidItem {
             fontFamily: Plasmoid.configuration.appNameFontFamily
             fontWeight: Plasmoid.configuration.appNameFontWeight
             Layout.alignment: Qt.AlignVCenter
-            Layout.leftMargin: root.vertical ? 0 : (compactAppIcon.visible ? Kirigami.Units.smallSpacing : root.appNameMarginBefore)
+            Layout.leftMargin: root.vertical ? 0 : (compactRoot.showAppIcon ? Kirigami.Units.smallSpacing : root.appNameMarginBefore)
             Layout.rightMargin: root.vertical ? 0 : root.appNameMarginAfter
-            Layout.topMargin: root.vertical ? (compactAppIcon.visible ? Kirigami.Units.smallSpacing : root.appNameMarginBefore) : 0
+            Layout.topMargin: root.vertical ? (compactRoot.showAppIcon ? Kirigami.Units.smallSpacing : root.appNameMarginBefore) : 0
             Layout.bottomMargin: root.vertical ? root.appNameMarginAfter : 0
         }
 
@@ -136,8 +136,15 @@ PlasmoidItem {
         // Flickable below, so hidden menus remain reachable by drag, wheel,
         // scrollbar and keyboard/hover navigation.
         readonly property bool isRTL: !root.vertical && Qt.application.layoutDirection === Qt.RightToLeft
-        readonly property int prefixW: prefixGrid.visible ? prefixGrid.implicitWidth : 0
-        readonly property int prefixH: prefixGrid.visible ? prefixGrid.implicitHeight : 0
+        readonly property bool hasAppName: appMenuModel.applicationName.length > 0
+        readonly property bool hasAppIcon: appMenuModel.applicationIcon !== undefined
+            && appMenuModel.applicationIcon !== null
+            && appMenuModel.applicationIcon !== ""
+        readonly property bool showAppPrefix: root.showApplicationName && hasAppName
+            && (root.barVisible || root.inPanelConfigure)
+        readonly property bool showAppIcon: showAppPrefix && root.showApplicationIcon && hasAppIcon
+        readonly property int prefixW: showAppPrefix ? prefixGrid.implicitWidth : 0
+        readonly property int prefixH: showAppPrefix ? prefixGrid.implicitHeight : 0
 
         // Generation counter bumped whenever the Repeater recreates delegates.
         // Pure bindings that read itemAt() lose their dependencies when old
@@ -492,6 +499,7 @@ PlasmoidItem {
             function onApplicationNameChanged() {
                 menuScroller.contentX = 0
                 menuScroller.contentY = 0
+                fullRoot.scheduleCapRefresh()
             }
             function onMenuAvailableChanged() {
                 menuScroller.contentX = 0
@@ -528,19 +536,14 @@ PlasmoidItem {
             y: root.vertical ? 0 : Math.max(0, (parent.height - height) / 2)
             width: implicitWidth
             height: implicitHeight
-            visible: fullAppIcon.visible || appNameLabel.visible
+            visible: fullRoot.showAppPrefix
             flow: root.vertical ? GridLayout.TopToBottom : GridLayout.LeftToRight
             rowSpacing: root.vertical ? itemSpacing : 0
             columnSpacing: root.vertical ? 0 : itemSpacing
 
             Kirigami.Icon {
                 id: fullAppIcon
-                visible: root.showApplicationName && root.showApplicationIcon
-                    && appMenuModel.applicationIcon !== undefined
-                    && appMenuModel.applicationIcon !== null
-                    && appMenuModel.applicationIcon !== ""
-                    && appMenuModel.applicationName.length > 0
-                    && (root.barVisible || root.inPanelConfigure)
+                visible: fullRoot.showAppIcon
                 source: appMenuModel.applicationIcon
                 Layout.alignment: Qt.AlignVCenter
                 implicitWidth: Kirigami.Units.iconSizes.small
@@ -551,24 +554,23 @@ PlasmoidItem {
 
             AppNameLabel {
                 id: appNameLabel
-                visible: root.showApplicationName && appMenuModel.applicationName.length > 0
-                    && (root.barVisible || root.inPanelConfigure)
+                visible: fullRoot.showAppPrefix
                 text: appMenuModel.applicationName
                 fontSize: Plasmoid.configuration.appNameFontSize
                 fontFamily: Plasmoid.configuration.appNameFontFamily
                 fontWeight: Plasmoid.configuration.appNameFontWeight
                 Layout.alignment: Qt.AlignVCenter
-                Layout.leftMargin: root.vertical ? 0 : (fullAppIcon.visible ? Kirigami.Units.smallSpacing : root.appNameMarginBefore)
+                Layout.leftMargin: root.vertical ? 0 : (fullRoot.showAppIcon ? Kirigami.Units.smallSpacing : root.appNameMarginBefore)
                 Layout.rightMargin: root.vertical ? 0 : root.appNameMarginAfter
-                Layout.topMargin: root.vertical ? (fullAppIcon.visible ? Kirigami.Units.smallSpacing : root.appNameMarginBefore) : 0
+                Layout.topMargin: root.vertical ? (fullRoot.showAppIcon ? Kirigami.Units.smallSpacing : root.appNameMarginBefore) : 0
                 Layout.bottomMargin: root.vertical ? root.appNameMarginAfter : 0
             }
         }
 
         Flickable {
             id: menuScroller
-            x: root.vertical ? 0 : (isRTL ? 0 : (prefixGrid.visible ? prefixGrid.width + itemSpacing : 0))
-            y: root.vertical ? (prefixGrid.visible ? prefixGrid.height + itemSpacing : 0) : 0
+            x: root.vertical ? 0 : (isRTL ? 0 : (fullRoot.showAppPrefix ? prefixGrid.width + itemSpacing : 0))
+            y: root.vertical ? (fullRoot.showAppPrefix ? prefixGrid.height + itemSpacing : 0) : 0
             width: root.vertical ? parent.width : Math.max(0, parent.width - x)
             height: root.vertical ? Math.max(0, parent.height - y) : parent.height
             clip: true
