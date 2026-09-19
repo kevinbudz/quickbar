@@ -34,6 +34,7 @@ KCMUtils.SimpleKCM {
     readonly property bool cfg_filterByActiveDefault: false
     readonly property bool cfg_stickyMenuBarDefault: true
     readonly property bool cfg_showDesktopMenuDefault: true
+    readonly property bool cfg_hideWhenMaximizedDefault: false
     readonly property bool cfg_hoverOpensMenuDefault: true
     readonly property bool cfg_enableMenuSearchDefault: true
     readonly property bool cfg_enableGenericMenuDefault: true
@@ -47,6 +48,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_filterByActive: filterByActiveCheck.checked
     property alias cfg_stickyMenuBar: stickyMenuBarCheck.checked
     property alias cfg_showDesktopMenu: showDesktopMenuCheck.checked
+    property alias cfg_hideWhenMaximized: hideWhenMaximizedCheck.checked
     property alias cfg_hoverOpensMenu: hoverOpensMenuCheck.checked
     property alias cfg_enableMenuSearch: enableMenuSearchCheck.checked
     property alias cfg_enableGenericMenu: enableGenericMenuCheck.checked
@@ -350,6 +352,14 @@ KCMUtils.SimpleKCM {
                         id: showDesktopMenuCheck
                         Kirigami.FormData.label: " "
                         text: i18n("Show menu bar on Desktop")
+                    }
+
+                    QQC2.CheckBox {
+                        id: hideWhenMaximizedCheck
+                        Kirigami.FormData.label: " "
+                        text: i18n("Hide when the active window is maximized")
+                        QQC2.ToolTip.visible: hovered
+                        QQC2.ToolTip.text: i18n("Hide the menu while the active window is maximized.")
                     }
 
                     QQC2.CheckBox {

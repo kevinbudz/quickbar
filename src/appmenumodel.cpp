@@ -109,15 +109,27 @@ AppMenuModel::AppMenuModel(QObject *parent)
             [this](const QModelIndex &topLeft, const QModelIndex &bottomRight, const QList<int> &roles = QList<int>()) {
                 Q_UNUSED(topLeft)
                 Q_UNUSED(bottomRight)
+                // The maximized flag is a single cheap data() read and only
+                // notifies on change, so refresh it on every data change: the
+                // backend may report a maximize toggle under roles other than
+                // IsMaximized (e.g. geometry), and missing that update would
+                // leave the hide-when-maximized option stuck.
+                refreshActiveWindowMaximized();
                 if (roles.contains(TaskManager::AbstractTasksModel::ApplicationMenuObjectPath)
                     || roles.contains(TaskManager::AbstractTasksModel::ApplicationMenuServiceName)
                     || roles.contains(TaskManager::AbstractTasksModel::AppId)
                     || roles.contains(TaskManager::AbstractTasksModel::AppName)
+                    || roles.contains(TaskManager::AbstractTasksModel::IsMaximized)
                     || roles.contains(Qt::DecorationRole)
                     || roles.isEmpty()) {
                     onActiveWindowChanged();
                 }
             });
+    // Model restructuring can remap the active task: keep the flag fresh.
+    connect(m_tasksModel, &TaskManager::TasksModel::rowsInserted, this, &AppMenuModel::refreshActiveWindowMaximized);
+    connect(m_tasksModel, &TaskManager::TasksModel::rowsRemoved, this, &AppMenuModel::refreshActiveWindowMaximized);
+    connect(m_tasksModel, &TaskManager::TasksModel::modelReset, this, &AppMenuModel::refreshActiveWindowMaximized);
+    connect(m_tasksModel, &TaskManager::TasksModel::layoutChanged, this, &AppMenuModel::refreshActiveWindowMaximized);
     connect(m_tasksModel, &TaskManager::TasksModel::activityChanged, this, &AppMenuModel::onActiveWindowChanged);
     connect(m_tasksModel, &TaskManager::TasksModel::virtualDesktopChanged, this, &AppMenuModel::onActiveWindowChanged);
     connect(m_tasksModel, &TaskManager::TasksModel::countChanged, this, &AppMenuModel::onActiveWindowChanged);
@@ -222,6 +234,49 @@ void AppMenuModel::setallScreens(bool allScreens)
 bool AppMenuModel::visible() const
 {
     return m_visible;
+}
+
+bool AppMenuModel::activeWindowMaximized() const
+{
+    return m_activeWindowMaximized;
+}
+
+void AppMenuModel::setActiveWindowMaximized(bool maximized)
+{
+    if (m_activeWindowMaximized != maximized) {
+        m_activeWindowMaximized = maximized;
+        Q_EMIT activeWindowMaximizedChanged();
+    }
+}
+
+bool AppMenuModel::isTaskMaximized(const QModelIndex &index) const
+{
+    if (!index.isValid() || !m_tasksModel) {
+        return false;
+    }
+    if (m_tasksModel->data(index, TaskManager::AbstractTasksModel::IsGroupParent).toBool()) {
+        const int kids = m_tasksModel->rowCount(index);
+        for (int r = 0; r < kids; ++r) {
+            const QModelIndex child = m_tasksModel->index(r, 0, index);
+            if (m_tasksModel->data(child, TaskManager::AbstractTasksModel::IsActive).toBool()) {
+                return isTaskMaximized(child);
+            }
+        }
+        return false;
+    }
+    // Fullscreen implies maximized geometry; treat it the same so the option
+    // behaves consistently for F11/maximized test flows.
+    return m_tasksModel->data(index, TaskManager::AbstractTasksModel::IsMaximized).toBool()
+        || m_tasksModel->data(index, TaskManager::AbstractTasksModel::IsFullScreen).toBool();
+}
+
+void AppMenuModel::refreshActiveWindowMaximized()
+{
+    if (!m_tasksModel) {
+        setActiveWindowMaximized(false);
+        return;
+    }
+    setActiveWindowMaximized(isTaskMaximized(m_tasksModel->activeTask()));
 }
 
 bool AppMenuModel::menuForDisplay() const
@@ -496,6 +551,7 @@ void AppMenuModel::onActiveWindowChanged()
 
     const QModelIndex activeTaskIndex = m_tasksModel->activeTask();
     updateAppNameAndIcon(activeTaskIndex);
+    refreshActiveWindowMaximized();
 
     if (activeTaskIndex.isValid()) {
         const QString objectPath = m_tasksModel->data(activeTaskIndex, TaskManager::AbstractTasksModel::ApplicationMenuObjectPath).toString();

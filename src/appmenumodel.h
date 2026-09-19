@@ -30,6 +30,7 @@ class AppMenuModel : public QAbstractListModel
 
     Q_PROPERTY(bool menuAvailable READ menuAvailable WRITE setMenuAvailable NOTIFY menuAvailableChanged)
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
+    Q_PROPERTY(bool activeWindowMaximized READ activeWindowMaximized NOTIFY activeWindowMaximizedChanged)
     Q_PROPERTY(bool menuForDisplay READ menuForDisplay NOTIFY menuForDisplayChanged)
     Q_PROPERTY(bool stickyMenuBar READ stickyMenuBar WRITE setStickyMenuBar NOTIFY stickyMenuBarChanged)
     Q_PROPERTY(bool showDesktopMenu READ showDesktopMenu WRITE setShowDesktopMenu NOTIFY showDesktopMenuChanged)
@@ -65,6 +66,7 @@ public:
     void setallScreens(bool allScreens);
 
     bool visible() const;
+    bool activeWindowMaximized() const;
     bool menuForDisplay() const;
 
     bool stickyMenuBar() const;
@@ -104,6 +106,7 @@ private Q_SLOTS:
 Q_SIGNALS:
     void allScreensChanged();
     void menuAvailableChanged();
+    void activeWindowMaximizedChanged();
     void menuForDisplayChanged();
     void stickyMenuBarChanged();
     void showDesktopMenuChanged();
@@ -119,6 +122,7 @@ Q_SIGNALS:
 
 private:
     bool m_menuAvailable;
+    bool m_activeWindowMaximized = false;
     bool m_allScreens = true;
     bool m_updatePending = false;
     bool m_visible = true;
@@ -136,6 +140,13 @@ private:
 
     void setApplicationName(const QString &name);
     void setApplicationIcon(const QVariant &icon);
+    void setActiveWindowMaximized(bool maximized);
+    // True when the given task is maximized or fullscreen, resolving group
+    // parents to their active child. Invalid index returns false.
+    bool isTaskMaximized(const QModelIndex &index) const;
+    // Re-read the maximized state of the current active task and publish it.
+    // Cheap and emission-gated: safe to call on any tasks-model change.
+    void refreshActiveWindowMaximized();
     void ensureGenericMenuCreated();
     void applyGenericMenu();
     void clearApplicationMenu();

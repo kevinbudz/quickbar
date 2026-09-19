@@ -33,12 +33,16 @@ PlasmoidItem {
     readonly property bool centerButtonsWhenScrolling: Plasmoid.configuration.centerButtonsWhenScrolling
     readonly property int itemSpacing: Plasmoid.configuration.itemSpacing
     readonly property int maxMenuCells: Plasmoid.configuration.maxMenuCells
+    readonly property bool hideWhenMaximized: Plasmoid.configuration.hideWhenMaximized
     readonly property bool inPanelConfigure: Plasmoid.userConfiguring
         || (Plasmoid.containment?.corona?.editMode ?? false)
 
     readonly property bool barVisible: {
         if (inPanelConfigure) {
             return true
+        }
+        if (hideWhenMaximized && appMenuModel.activeWindowMaximized) {
+            return false
         }
         if (!appMenuModel.menuAvailable && hideWhenEmpty) {
             // Keep the bar visible for the app name (including "Plasma" on desktop)
@@ -102,6 +106,7 @@ PlasmoidItem {
         PlasmaComponents3.ToolButton {
             id: compactMenuButton
             readonly property int fakeIndex: 0
+            visible: root.barVisible || root.inPanelConfigure
             Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: false
             Layout.fillHeight: false
