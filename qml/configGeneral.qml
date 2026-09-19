@@ -34,7 +34,7 @@ KCMUtils.SimpleKCM {
     readonly property bool cfg_filterByActiveDefault: false
     readonly property bool cfg_stickyMenuBarDefault: true
     readonly property bool cfg_showDesktopMenuDefault: true
-    readonly property bool cfg_hideWhenMaximizedDefault: false
+    readonly property string cfg_hideByWindowStateDefault: "dontHide"
     readonly property bool cfg_hoverOpensMenuDefault: true
     readonly property bool cfg_enableMenuSearchDefault: true
     readonly property bool cfg_enableGenericMenuDefault: true
@@ -48,7 +48,7 @@ KCMUtils.SimpleKCM {
     property alias cfg_filterByActive: filterByActiveCheck.checked
     property alias cfg_stickyMenuBar: stickyMenuBarCheck.checked
     property alias cfg_showDesktopMenu: showDesktopMenuCheck.checked
-    property alias cfg_hideWhenMaximized: hideWhenMaximizedCheck.checked
+    property string cfg_hideByWindowState: "dontHide"
     property alias cfg_hoverOpensMenu: hoverOpensMenuCheck.checked
     property alias cfg_enableMenuSearch: enableMenuSearchCheck.checked
     property alias cfg_enableGenericMenu: enableGenericMenuCheck.checked
@@ -335,6 +335,34 @@ KCMUtils.SimpleKCM {
                         onActivated: generalPage.applyVisibilityPreset(currentValue)
                     }
 
+                    QQC2.ComboBox {
+                        id: hideByWindowStateCombo
+                        Kirigami.FormData.label: i18n("When to hide:")
+                        textRole: "text"
+                        valueRole: "value"
+                        model: [
+                            { value: "dontHide", text: i18n("Don't hide") },
+                            { value: "hideMaximized", text: i18n("When the active window is maximized") },
+                            { value: "hideWindowed", text: i18n("When the active window is not maximized") },
+                        ]
+                        QQC2.ToolTip.visible: hovered
+                        QQC2.ToolTip.text: i18n("Hide the menu bar based on the active window's maximized state.")
+                        Component.onCompleted: syncFromConfig()
+                        onActivated: generalPage.cfg_hideByWindowState = currentValue
+
+                        function syncFromConfig() {
+                            const idx = indexOfValue(generalPage.cfg_hideByWindowState)
+                            currentIndex = idx >= 0 ? idx : 0
+                        }
+
+                        Connections {
+                            target: generalPage
+                            function onCfg_hideByWindowStateChanged() {
+                                hideByWindowStateCombo.syncFromConfig()
+                            }
+                        }
+                    }
+
                     QQC2.CheckBox {
                         id: showApplicationNameCheck
                         Kirigami.FormData.label: " "
@@ -352,14 +380,6 @@ KCMUtils.SimpleKCM {
                         id: showDesktopMenuCheck
                         Kirigami.FormData.label: " "
                         text: i18n("Show menu bar on Desktop")
-                    }
-
-                    QQC2.CheckBox {
-                        id: hideWhenMaximizedCheck
-                        Kirigami.FormData.label: " "
-                        text: i18n("Hide when the active window is maximized")
-                        QQC2.ToolTip.visible: hovered
-                        QQC2.ToolTip.text: i18n("Hide the menu while the active window is maximized.")
                     }
 
                     QQC2.CheckBox {

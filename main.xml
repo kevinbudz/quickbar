@@ -96,9 +96,9 @@
       <label>Only show menus when the target window is active</label>
       <default>false</default>
     </entry>
-    <entry name="hideWhenMaximized" type="Bool">
-      <label>Hide when the active window is maximized</label>
-      <default>false</default>
+    <entry name="hideByWindowState" type="String">
+      <label>Hide the menu bar based on the active window state</label>
+      <default>dontHide</default>
     </entry>
     <entry name="stickyMenuBar" type="Bool">
       <label>Keep the bar visible when the menu’s window is not active</label>

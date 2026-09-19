@@ -33,7 +33,7 @@ PlasmoidItem {
     readonly property bool centerButtonsWhenScrolling: Plasmoid.configuration.centerButtonsWhenScrolling
     readonly property int itemSpacing: Plasmoid.configuration.itemSpacing
     readonly property int maxMenuCells: Plasmoid.configuration.maxMenuCells
-    readonly property bool hideWhenMaximized: Plasmoid.configuration.hideWhenMaximized
+    readonly property string hideByWindowState: Plasmoid.configuration.hideByWindowState
     readonly property bool inPanelConfigure: Plasmoid.userConfiguring
         || (Plasmoid.containment?.corona?.editMode ?? false)
 
@@ -41,7 +41,10 @@ PlasmoidItem {
         if (inPanelConfigure) {
             return true
         }
-        if (hideWhenMaximized && appMenuModel.activeWindowMaximized) {
+        if (hideByWindowState === "hideMaximized" && appMenuModel.activeWindowMaximized) {
+            return false
+        }
+        if (hideByWindowState === "hideWindowed" && !appMenuModel.activeWindowMaximized) {
             return false
         }
         if (!appMenuModel.menuAvailable && hideWhenEmpty) {
