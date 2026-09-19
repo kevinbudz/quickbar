@@ -264,10 +264,9 @@ bool AppMenuModel::isTaskMaximized(const QModelIndex &index) const
         }
         return false;
     }
-    // Fullscreen implies maximized geometry; treat it the same so the option
-    // behaves consistently for F11/maximized test flows.
-    return m_tasksModel->data(index, TaskManager::AbstractTasksModel::IsMaximized).toBool()
-        || m_tasksModel->data(index, TaskManager::AbstractTasksModel::IsFullScreen).toBool();
+    // Strictly the maximized state: fullscreen is a separate window state and
+    // must not keep the flag set for ordinary windowed windows.
+    return m_tasksModel->data(index, TaskManager::AbstractTasksModel::IsMaximized).toBool();
 }
 
 void AppMenuModel::refreshActiveWindowMaximized()
@@ -277,6 +276,20 @@ void AppMenuModel::refreshActiveWindowMaximized()
         return;
     }
     setActiveWindowMaximized(isTaskMaximized(m_tasksModel->activeTask()));
+    // The backend can signal before its internal state settles (seen as the
+    // flag sticking after unmaximize). One coalesced deferred re-read catches
+    // the late value; it is a no-op when nothing changed.
+    if (!m_maximizedRefreshQueued) {
+        m_maximizedRefreshQueued = true;
+        QTimer::singleShot(250, this, [this] {
+            m_maximizedRefreshQueued = false;
+            if (!m_tasksModel) {
+                setActiveWindowMaximized(false);
+                return;
+            }
+            setActiveWindowMaximized(isTaskMaximized(m_tasksModel->activeTask()));
+        });
+    }
 }
 
 bool AppMenuModel::menuForDisplay() const

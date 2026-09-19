@@ -123,6 +123,7 @@ Q_SIGNALS:
 private:
     bool m_menuAvailable;
     bool m_activeWindowMaximized = false;
+    bool m_maximizedRefreshQueued = false;
     bool m_allScreens = true;
     bool m_updatePending = false;
     bool m_visible = true;
@@ -141,8 +142,8 @@ private:
     void setApplicationName(const QString &name);
     void setApplicationIcon(const QVariant &icon);
     void setActiveWindowMaximized(bool maximized);
-    // True when the given task is maximized or fullscreen, resolving group
-    // parents to their active child. Invalid index returns false.
+    // True when the given task is maximized, resolving group parents to
+    // their active child. Invalid index returns false.
     bool isTaskMaximized(const QModelIndex &index) const;
     // Re-read the maximized state of the current active task and publish it.
     // Cheap and emission-gated: safe to call on any tasks-model change.
