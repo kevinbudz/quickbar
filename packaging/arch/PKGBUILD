@@ -29,7 +29,7 @@ optdepends=(
     'dolphin: Finder-style desktop menu (Dolphin menu bar on desktop)'
 )
 source=("$url/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('bb3ed2e632e296bf89cec5588f824f7febc829b2c02be48e04a6e676bac60e64')
+sha256sums=('a9a9ccfd8e4d2e1b86b22fccdef5d83aec45b6f8bcc961fd5730d72f53552f3b')
 
 build() {
     cmake -B build -S "quickbar-$pkgver" \
