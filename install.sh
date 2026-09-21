@@ -233,20 +233,17 @@ install_deps_fedora() {
 }
 
 install_deps_opensuse() {
-    local spec="$ROOT/packaging/rpm/quickbar.spec"
-    if [[ -f "$spec" ]] && command -v zypper >/dev/null 2>&1; then
-        echo "Installing build dependencies from RPM spec via zypper..."
-        run_privileged zypper -n install -y rpm-build 2>/dev/null || true
-        run_privileged zypper -n build-deps-install "$spec"
-        return
-    fi
+    # NOTE: do not use `zypper build-deps-install` here — it is not a
+    # built-in zypper command on openSUSE Tumbleweed (it needs an extra
+    # plug-in package) and fails with "Unknown command 'build-deps-install'".
+    # Install the spec's BuildRequires explicitly instead (see #21).
     local packages=(
         cmake
         extra-cmake-modules
         gcc-c++
-        libqt6-qtbase-devel
-        libqt6-qtdeclarative-devel
-        plasma6-libplasma-devel
+        qt6-base-devel
+        qt6-declarative-devel
+        libplasma6-devel
         plasma6-workspace-devel
         kf6-kconfig-devel
         kf6-kcoreaddons-devel
@@ -297,7 +294,11 @@ Install Plasma 6 build dependencies manually, then re-run:
       libX11-devel libXtst-devel
 
   openSUSE:
-    sudo zypper build-deps-install packaging/rpm/quickbar.spec
+    sudo zypper install -y cmake extra-cmake-modules gcc-c++ \
+      qt6-base-devel qt6-declarative-devel libplasma6-devel \
+      plasma6-workspace-devel kf6-kconfig-devel kf6-kcoreaddons-devel \
+      kf6-ki18n-devel kf6-kitemmodels-devel kf6-kwindowsystem-devel kf6-kirigami-devel \
+      libX11-devel libXtst-devel
 
 See README.md and packaging/README.md for details.
 EOF

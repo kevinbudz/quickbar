@@ -74,7 +74,11 @@ Package names for `-dev` libraries may differ slightly on your release; use `apt
 ```bash
 cd /path/to/quickbar
 sudo dnf builddep packaging/rpm/quickbar.spec   # Fedora
-# sudo zypper build-deps-install packaging/rpm/quickbar.spec   # openSUSE
+sudo zypper install -y cmake extra-cmake-modules gcc-c++ \
+  qt6-base-devel qt6-declarative-devel libplasma6-devel \
+  plasma6-workspace-devel kf6-kconfig-devel kf6-kcoreaddons-devel \
+  kf6-ki18n-devel kf6-kitemmodels-devel kf6-kwindowsystem-devel kf6-kirigami-devel \
+  libX11-devel libXtst-devel   # openSUSE (no build-deps-install plug-in needed)
 rpmbuild -ba packaging/rpm/quickbar.spec \
   --define "_sourcedir $(pwd)" \
   --define "_srcrpmdir $(pwd)/packaging/rpm" \
