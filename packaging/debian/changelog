@@ -1,3 +1,11 @@
+quickbar (1.13-1) unstable; urgency=medium
+
+  * Release 1.13: fix openSUSE Tumbleweed install (replace non-built-in
+    zypper build-deps-install with explicit zypper install; correct
+    Qt6/Plasma package names).
+
+ -- Kevin Budz <kevin.budz052@gmail.com>  Mon, 21 Sep 2026 17:00:47 -0500
+
 quickbar (1.12-1) unstable; urgency=medium
 
   * Release 1.12: vertical button centering setting (also when

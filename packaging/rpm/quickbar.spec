@@ -1,5 +1,5 @@
 Name:           quickbar
-Version:        1.12
+Version:        1.13
 Release:        1%{?dist}
 Summary:        Configurable Plasma 6 global menu panel widget
 
@@ -73,6 +73,9 @@ the stock Global Menu widget. Do not run both at once.
 %{_datadir}/locale/*/LC_MESSAGES/plasma_applet_org.quickbar.globalmenu.mo
 
 %changelog
+* Mon Sep 21 2026 Kevin Budz <kevin.budz052@gmail.com> - 1.13-1
+- Release 1.13: fix openSUSE Tumbleweed install (replace non-built-in zypper build-deps-install with explicit zypper install; correct Qt6/Plasma package names)
+
 * Sat Sep 05 2026 Kevin Budz <kevin.budz052@gmail.com> - 1.12-1
 - Release 1.12: vertical button centering setting (also when scrolling, default on), robust cap re-measure poller, app-name always centered in bar
 
