@@ -1,0 +1,420 @@
+# Spanish translation for QuickBar.
+# Copyright (C) 2026 QuickBar contributors
+# This file is distributed under the same license as the QuickBar package.
+# JotaRata <jjbarria.c@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: quickbar 1.13\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-09 00:00-0300\n"
+"PO-Revision-Date: 2026-11-09 00:00-0300\n"
+"Last-Translator: JotaRata <jjbarria.c@gmail.com>\n"
+"Language-Team: Spanish <kde-l10n-es@kde.org>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: src/appmenumodel.cpp:158
+msgid "Search"
+msgstr "Buscar"
+
+#: src/appmenumodel.cpp:165
+msgid "Search…"
+msgstr "Buscar…"
+
+#: src/appmenumodel.cpp:557
+msgid "Plasma"
+msgstr "Plasma"
+
+#: src/genericmenu.cpp:37
+msgid "&File"
+msgstr "&Archivo"
+
+#: src/genericmenu.cpp:38
+msgid "Quit Application"
+msgstr "Salir de la aplicación"
+
+#: src/genericmenu.cpp:42
+msgid "&Edit"
+msgstr "&Editar"
+
+#: src/genericmenu.cpp:43
+msgid "&Undo"
+msgstr "&Deshacer"
+
+#: src/genericmenu.cpp:44
+msgid "&Redo"
+msgstr "&Rehacer"
+
+#: src/genericmenu.cpp:46
+msgid "Cu&t"
+msgstr "Cor&tar"
+
+#: src/genericmenu.cpp:47
+msgid "&Copy"
+msgstr "&Copiar"
+
+#: src/genericmenu.cpp:48
+msgid "&Paste"
+msgstr "&Pegar"
+
+#: src/genericmenu.cpp:50
+msgid "Select &All"
+msgstr "Seleccionar t&odo"
+
+#: src/genericmenu.cpp:52
+msgid "&View"
+msgstr "&Ver"
+
+#: src/genericmenu.cpp:53
+msgid "Minimize"
+msgstr "Minimizar"
+
+#: src/genericmenu.cpp:55
+msgid "Maximize"
+msgstr "Maximizar"
+
+#: src/genericmenu.cpp:58
+msgid "&Help"
+msgstr "A&yuda"
+
+#: src/genericmenu.cpp:59
+msgid "&About"
+msgstr "&Acerca de"
+
+#: qml/configAbout.qml:18 qml/config.qml:12 qml/main.qml:799
+msgctxt "@title:window About this widget"
+msgid "About"
+msgstr "Acerca de"
+
+#: qml/configAbout.qml:46
+msgctxt "@action:button Send an email"
+msgid "Send an email to %1"
+msgstr "Enviar un correo electrónico a %1"
+
+#: qml/configAbout.qml:57
+msgctxt "@action:button Open website"
+msgid "Open website %1"
+msgstr "Abrir el sitio web %1"
+
+#: qml/configAbout.qml:136
+msgctxt "@title:group"
+msgid "Website"
+msgstr "Página web"
+
+#: qml/configAbout.qml:147
+msgctxt "@title:group"
+msgid "Get Help"
+msgstr "Obtener ayuda"
+
+#: qml/configAbout.qml:154
+msgctxt "@action:button Report an issue"
+msgid "Report an issue"
+msgstr "Informar de un problema"
+
+#: qml/configAbout.qml:160
+msgctxt "@title:group"
+msgid "Copyright"
+msgstr "Copyright"
+
+#: qml/configAbout.qml:179
+msgctxt "@label License"
+msgid "License: %1"
+msgstr "Licencia: %1"
+
+#: qml/configAbout.qml:185
+msgctxt "@action:button"
+msgid "Read License"
+msgstr "Leer la licencia"
+
+#: qml/configAbout.qml:199
+msgctxt "@title:group"
+msgid "Authors"
+msgstr "Autores"
+
+#: qml/configAbout.qml:211
+msgctxt "@title:group"
+msgid "Credits"
+msgstr "Créditos"
+
+#: qml/configAbout.qml:224
+msgctxt "@title:group"
+msgid "Translators"
+msgstr "Traductores"
+
+#: qml/configGeneral.qml:75
+msgid "Always show the menu bar"
+msgstr "Mostrar siempre la barra de menú"
+
+#: qml/configGeneral.qml:76
+msgid "Only when the app window is active"
+msgstr "Solo cuando la ventana de la aplicación esté activa"
+
+#: qml/configGeneral.qml:77
+msgid "Hide when no application menu is available"
+msgstr "Ocultar cuando no haya ningún menú de aplicación disponible"
+
+#: qml/configGeneral.qml:98
+msgid "default weight"
+msgstr "grosor predeterminado"
+
+#: qml/configGeneral.qml:101
+msgid "thin"
+msgstr "delgada"
+
+#: qml/configGeneral.qml:104
+msgid "extra light"
+msgstr "muy ligera"
+
+#: qml/configGeneral.qml:107
+msgid "light"
+msgstr "ligera"
+
+#: qml/configGeneral.qml:110
+msgid "regular"
+msgstr "normal"
+
+#: qml/configGeneral.qml:113
+msgid "medium"
+msgstr "mediana"
+
+#: qml/configGeneral.qml:116
+msgid "semi bold"
+msgstr "seminegrita"
+
+#: qml/configGeneral.qml:119
+msgid "bold"
+msgstr "negrita"
+
+#: qml/configGeneral.qml:122
+msgid "extra bold"
+msgstr "extranegrita"
+
+#: qml/configGeneral.qml:124
+msgid "black"
+msgstr "negra"
+
+#: qml/configGeneral.qml:128
+msgid "System default"
+msgstr "Predeterminado del sistema"
+
+#: qml/configGeneral.qml:130
+msgctxt "@label font size in points"
+msgid "%1 pt"
+msgstr "%1 pt"
+
+#: qml/configGeneral.qml:131
+msgid "default size"
+msgstr "tamaño predeterminado"
+
+#: qml/configGeneral.qml:133
+msgctxt "@info selected font, %1 family, %2 size, %3 style"
+msgid "%1, %2, %3"
+msgstr "%1, %2, %3"
+
+#: qml/configGeneral.qml:218
+msgid ""
+"Remove Plasma’s stock Global Menu from this panel before using QuickBar. "
+"Both widgets register the same menu service and cannot run together."
+msgstr ""
+"Elimine el menú global predeterminado de Plasma de este panel antes de usar "
+"QuickBar. Ambos widgets registran el mismo servicio de menú y no pueden "
+"funcionar a la vez."
+
+#: qml/configGeneral.qml:221
+msgctxt "@action:button"
+msgid "Learn more"
+msgstr "Más información"
+
+#: qml/configGeneral.qml:241
+msgid "Menu bar"
+msgstr "Barra de menú"
+
+#: qml/configGeneral.qml:248
+msgid "Display:"
+msgstr "Mostrar:"
+
+#: qml/configGeneral.qml:253
+msgid "Full menubar (File, Edit, …)"
+msgstr "Barra de menú completa (Archivo, Editar, …)"
+
+#: qml/configGeneral.qml:259
+msgid "Single application-menu button"
+msgstr "Botón único de menú de la aplicación"
+
+#: qml/configGeneral.qml:272
+msgid "Fill remaining panel width"
+msgstr "Rellenar el ancho restante del panel"
+
+#: qml/configGeneral.qml:278
+msgid "Show menus for apps on all screens"
+msgstr "Mostrar los menús de las aplicaciones en todas las pantallas"
+
+#: qml/configGeneral.qml:284
+msgid "Open menus on hover while a menu is already open"
+msgstr "Abrir los menús al pasar el cursor cuando ya hay uno abierto"
+
+#: qml/configGeneral.qml:289
+msgid "Max dropdown rows:"
+msgstr "Máx. filas del desplegable:"
+
+#: qml/configGeneral.qml:293
+msgid ""
+"Maximum number of rows visible in a dropdown menu before scrolling is "
+"triggered (0 = unlimited)"
+msgstr ""
+"Número máximo de filas visibles en un menú desplegable antes de que se "
+"active el desplazamiento (0 = sin límite)"
+
+#: qml/configGeneral.qml:299
+msgid "Generic menu for apps without global menu support"
+msgstr "Menú genérico para aplicaciones sin compatibilidad con el menú global"
+
+#: qml/configGeneral.qml:304
+msgid "Exclude items (regex):"
+msgstr "Excluir elementos (regex):"
+
+#: qml/configGeneral.qml:305
+msgid "e.g. ^(Search|Help)$"
+msgstr "p. ej. ^(Buscar|Ayuda)$"
+
+#: qml/configGeneral.qml:323
+msgid "Visibility"
+msgstr "Visibilidad"
+
+#: qml/configGeneral.qml:331
+msgid "When to show:"
+msgstr "Cuándo mostrar:"
+
+#: qml/configGeneral.qml:340
+msgid "When to hide:"
+msgstr "Cuándo ocultar:"
+
+#: qml/configGeneral.qml:344
+msgid "Don't hide"
+msgstr "No ocultar"
+
+#: qml/configGeneral.qml:345
+msgid "When the active window is maximized"
+msgstr "Cuando la ventana activa esté maximizada"
+
+#: qml/configGeneral.qml:346
+msgid "When the active window is not maximized"
+msgstr "Cuando la ventana activa no esté maximizada"
+
+#: qml/configGeneral.qml:349
+msgid "Hide the menu bar based on the active window's maximized state."
+msgstr "Ocultar la barra de menú según si la ventana activa está maximizada."
+
+#: qml/configGeneral.qml:369
+msgid "Show application name before the menu"
+msgstr "Mostrar el nombre de la aplicación antes del menú"
+
+#: qml/configGeneral.qml:375
+msgid "Show application icon before the menu"
+msgstr "Mostrar el icono de la aplicación antes del menú"
+
+#: qml/configGeneral.qml:382
+msgid "Show menu bar on Desktop"
+msgstr "Mostrar la barra de menú en el escritorio"
+
+#: qml/configGeneral.qml:421
+msgid "Button style"
+msgstr "Estilo de los botones"
+
+#: qml/configGeneral.qml:429
+msgid "Spacing (px):"
+msgstr "Espaciado (px):"
+
+#: qml/configGeneral.qml:436
+msgid "Hover corner radius (px):"
+msgstr "Radio de las esquinas al pasar el cursor (px):"
+
+#: qml/configGeneral.qml:443
+msgid "Max visible items:"
+msgstr "Máximo de elementos visibles:"
+
+#: qml/configGeneral.qml:451
+msgid "Center buttons vertically even when scrolling"
+msgstr "Centrar los botones verticalmente incluso al desplazarse"
+
+#: qml/configGeneral.qml:464
+msgid ""
+"Show at most N top-level menus. Drag, use the mouse wheel, or drag the thin "
+"scrollbar to reach the rest. Set to 0 for no limit."
+msgstr ""
+"Mostrar como máximo N menús de nivel superior. Arrastre, use la rueda del "
+"ratón o arrastre la barra de desplazamiento fina para llegar al resto. "
+"Establezca 0 para no tener límite."
+
+#: qml/configGeneral.qml:480
+msgid "Text"
+msgstr "Texto"
+
+#: qml/configGeneral.qml:487
+msgid "Name margins (px):"
+msgstr "Márgenes del nombre (px):"
+
+#: qml/configGeneral.qml:499
+msgid "Before:"
+msgstr "Antes:"
+
+#: qml/configGeneral.qml:516
+msgid "After:"
+msgstr "Después:"
+
+#: qml/configGeneral.qml:529
+msgid "Colors:"
+msgstr "Colores:"
+
+#: qml/configGeneral.qml:540
+msgid "Text:"
+msgstr "Texto:"
+
+#: qml/configGeneral.qml:546 qml/configGeneral.qml:562
+msgid "#RRGGBB or empty"
+msgstr "#RRGGBB o vacío"
+
+#: qml/configGeneral.qml:556
+msgid "Hover:"
+msgstr "Al pasar el cursor:"
+
+#: qml/configGeneral.qml:573
+msgid "Application name font:"
+msgstr "Tipo de letra del nombre de la aplicación:"
+
+#: qml/configGeneral.qml:584 qml/configGeneral.qml:607
+msgctxt "@action:button"
+msgid "Choose Font…"
+msgstr "Escoger tipo de letra…"
+
+#: qml/configGeneral.qml:591 qml/configGeneral.qml:614
+msgctxt "@action:button"
+msgid "Use system default font"
+msgstr "Usar el tipo de letra predeterminado del sistema"
+
+#: qml/configGeneral.qml:597
+msgid "Menu font:"
+msgstr "Tipo de letra del menú:"
+
+#: qml/configGeneral.qml:626
+msgctxt "@title:window"
+msgid "Choose Font"
+msgstr "Escoger tipo de letra"
+
+#: qml/configGeneral.qml:636
+msgctxt "@title:window"
+msgid "Choose Application Name Font"
+msgstr "Escoger el tipo de letra del nombre de la aplicación"
+
+#: qml/config.qml:7
+msgid "General"
+msgstr "General"
+
+#: qml/MenuDelegate.qml:55
+msgctxt "@info:usagetip"
+msgid "Open a menu"
+msgstr "Abrir un menú"
